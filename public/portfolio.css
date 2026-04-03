@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+
 /* Layout Basics */
 body {
     margin: 0;
@@ -11,29 +13,29 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 70px;
+    height: 4.375rem;
     background-color: #121212;
     color: #ffffff;
     display: flex;
     align-items: center;
     padding: 0 2rem;
     z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 0.125rem 0.625rem rgba(0,0,0,0.3);
 }
 
 /* Wide Sidebar */
 #priceContainer {
     position: fixed;
     left: 0;
-    top: 70px;
-    width: 380px; /* Bigger size for better readability */
-    height: calc(100vh - 70px);
+    top: 4.375rem;
+    width: 23.75rem; /* Bigger size for better readability */
+    height: calc(100vh - 4.375rem);
     overflow-y: auto;
     background-color: #fff;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
     border-right: 1px solid #e0e0e0;
     box-sizing: border-box;
 }
@@ -44,27 +46,27 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     background: #ffffff;
-    border: 1px solid #f0f0f0;
+    border: 0.0625rem solid #f0f0f0;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .coin-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-0.125rem);
+    box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.08);
     border-color: #48d1cc;
 }
 
 .coin-main {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 0.9375rem;
 }
 
 .coin-logo {
-    width: 32px;
-    height: 32px;
+    width: 2rem;
+    height: 2rem;
 }
 
 .coin-info {
@@ -91,3 +93,26 @@ body {
 
 .trend-up { color: #00b894; }
 .trend-down { color: #d63031; }
+
+/* Add this to portfolio.css */
+.chart-container {
+    margin-top: 2rem;
+    height: 25rem;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.dashboard {
+    margin-top: 6.25rem;
+    margin-left: 25rem; /* Account for sidebar width */
+    width: calc(100% - 28.125rem); /* Fill the remaining width */
+}
+
+#walletValue {
+    font-family: 'Inter', sans-serif;
+    font-weight: 1000; /* Extra bold for the price */
+    letter-spacing: -0.02em; /* Tighten it slightly for a premium feel */
+    color: #000000
+}

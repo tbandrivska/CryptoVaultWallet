@@ -7,18 +7,27 @@
     <title>portfolio</title>
 </head>
 <body id = "portfolio">
-    <header class="top-bar">
-        <div id="walletValue">Wallet Value: £0.00</div>
-    </header>
+    <header class="top-bar"></header>
     <div id="priceContainer">something is wrong</div>
     
+    <div class = 'dashboard'>
+        
+        <div id="walletValue">Wallet Value: £0.00</div>
 
-
+        <div class="chart-container">
+            <canvas id="coinChart"></canvas>
+        </div>
+    </div>
 </body>
+
 <script type="module">
-    import { fetchCoinPrice } from './coinPrices/coins.js';
+    import { fetchCoinPrice, renderChart } from './coinPrices/coins.js';
     document.addEventListener('DOMContentLoaded', () => {
         fetchCoinPrice();
+        renderChart();
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
 </html>
