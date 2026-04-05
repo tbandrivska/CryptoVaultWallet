@@ -1,5 +1,5 @@
 import crypto from "crypto";
-
+import { fetchCoinPrice } from "coinPrices/coins.js";
 let balance = 500;
 let transactions = [];
 
@@ -18,32 +18,38 @@ export const addTransaction = (tx) => {
   transactions.push(tx);
 };
 
-export const sendCrypto = (amount, address) => {
-  const parsedAmount = Number(amount);
-  const trimmedAddress = address?.trim();
-
-  if (!trimmedAddress || trimmedAddress.length < 5) {
+export const sendCrypto = (amount, address, currency = "BTC") => {
+  if (!address || address.length < 5) {
     return { success: false, message: "Invalid wallet address" };
   }
 
-  if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+  if (amount <= 0) {
     return { success: false, message: "Amount must be greater than 0" };
   }
 
-  if (parsedAmount > balance) {
+  if (amount > balance) {
     return { success: false, message: "Insufficient funds" };
   }
 
+  const price = fetchCoinPrice(currency);
+
+  const valueGBP = amount * price;
+
+  balance -= amount;
+
   const tx = {
-    id: crypto.randomUUID(),
+    id: "0x" + Math.random().toString(16).substring(2, 10),
     type: "send",
-    amount: parsedAmount,
-    address: trimmedAddress,
+    currency,
+    amount,
+    price,
+    valueGBP,
+    address,
     status: "success",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toLocaleString()
   };
 
-  addTransaction(tx);
+  transactions.push(tx);
 
   return {
     success: true,
@@ -51,7 +57,6 @@ export const sendCrypto = (amount, address) => {
     newBalance: balance
   };
 };
-
 export const getTransactions = () => {
   return transactions;
 };

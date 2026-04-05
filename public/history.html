@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<nav class="nav">
+  <a href="send.html">Send</a>
+  <a href="receive.html">Receive</a>
+  <a href="recurring.html">Recurring</a>
+  <a href="history.html">History</a>
+</nav>
 <html>
 <head>
   <title>Transaction History</title>
@@ -45,6 +51,13 @@ async function loadHistory() {
   });
 }
 </script>
+div.innerHTML = `
+  <strong>${tx.type.toUpperCase()}</strong><br>
+  ${tx.amount} ${tx.currency}<br>
+  Value: £${tx.valueGBP}<br>
+  To: ${tx.address}<br>
+  Time: ${tx.timestamp}
+`;
 
 </body>
 </html>

@@ -89,3 +89,33 @@ button:hover {
 .error {
   color: #f87171;
 }
+.container {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.nav {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.nav a {
+  margin-right: 15px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.nav a:hover {
+  color: white;
+}
