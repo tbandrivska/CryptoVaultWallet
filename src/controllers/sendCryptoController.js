@@ -1,25 +1,21 @@
 import { sendCrypto } from "../transaction/transactionService.js";
 
-export const sendCryptoController = (req, res) => {
+export const sendCryptoController = async (req, res) => {
   const { amount, address, currency } = req.body;
 
-  const result = sendCrypto(Number(amount), address, currency);
+  try {
+    const walletId = 1; // temporary mock wallet id for prototype
+    const result = await sendCrypto(walletId, Number(amount), address, currency);
 
-  if (result.success) {
-    res.json(result);
-  } else {
-    res.status(400).json(result);
+    if (result.success) {
+      return res.json(result);
+    } else {
+      return res.status(400).json(result);
+    }
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
   }
-};
-import { getTransactions } from "../transaction/transactionService.js";
-
-export const getTransactionHistory = (req, res) => {
-  res.json(getTransactions());
-};
-export const sendTransaction = (req, res) => {
-  const { amount, address } = req.body;
-
-  const result = sendCrypto(amount, address);
-
-  res.json(result);
 };
