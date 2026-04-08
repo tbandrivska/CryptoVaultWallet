@@ -21,4 +21,4 @@ router.get("/recurring", getRecurringController);
 router.delete("/recurring/:id", cancelRecurringController);
 
 export default router;
-router.post("/send", sendTransaction);
+//router.post("/send", sendTransaction);
