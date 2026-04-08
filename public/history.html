@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<nav class="nav">
+  <a href="send.html">Send</a>
+  <a href="receive.html">Receive</a>
+  <a href="recurring.html">Recurring</a>
+  <a href="history.html">History</a>
+</nav>
 <html>
 <head>
   <title>Transaction History</title>
@@ -17,34 +23,28 @@
 
 <script>
 async function loadHistory() {
-  const res = await fetch("http://localhost:3000/api/transactions/history");
+  const walletId = 1; // demo wallet
+
+  const res = await fetch(`http://localhost:3000/api/transactions/history/${walletId}`);
   const data = await res.json();
 
   const container = document.getElementById("history");
   container.innerHTML = "";
 
-  if (data.length === 0) {
-    container.innerHTML = "<p>No transactions yet</p>";
-    return;
-  }
-
   data.forEach(tx => {
     const div = document.createElement("div");
-    div.className = "tx";
 
     div.innerHTML = `
-      <strong>${tx.type.toUpperCase()}</strong><br>
-      Amount: ${tx.amount}<br>
-      To: ${tx.address}<br>
-      Status: ${tx.status}<br>
-      Time: ${tx.timestamp}<br>
-      TxID: ${tx.id}
+      <strong>${tx.type}</strong><br>
+      ${tx.amount} ${tx.currency}<br>
+      £${tx.value_gbp}<br>
+      ${tx.timestamp}
     `;
 
     container.appendChild(div);
   });
 }
-</script>
 
+</script>
 </body>
 </html>

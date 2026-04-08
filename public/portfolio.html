@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="portfolio.css">
+    <title>portfolio</title>
+</head>
+<body id = "portfolio">
+    <header class="top-bar"></header>
+    <div id="priceContainer">something is wrong</div>
+    
+    <div class = 'dashboard'>
+        
+        <div id="walletValue">Wallet Value: £0.00</div>
+
+        <div class="chart-container">
+            <canvas id="coinChart"></canvas>
+        </div>
+    </div>
+</body>
+
+<script type="module">
+    import { fetchCoinPrice, renderChart } from './coinPrices/coins.js';
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchCoinPrice();
+        renderChart();
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+</html>

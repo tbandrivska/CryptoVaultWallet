@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recurring Payments</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .nav {
+      margin-bottom: 20px;
+    }
+
+    .nav a {
+      margin-right: 15px;
+      text-decoration: none;
+      color: black;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 500px;
+    }
+
+    input, select, button {
+      margin: 10px 0;
+      padding: 8px;
+      width: 250px;
+      display: block;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .payment {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+      margin-top: 10px;
+    }
+
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="send.html">Send</a>
+    <a href="receive.html">Receive</a>
+    <a href="recurring.html">Recurring</a>
+    <a href="history.html">History</a>
+  </nav>
+
+  <div class="container">
+    <h2>Recurring Payments</h2>
+
+    <label for="address">Recipient Address</label>
+    <input id="address" type="text" placeholder="Recipient Address" />
+
+    <label for="amount">Amount</label>
+    <input id="amount" type="number" placeholder="Amount" min="0.0001" step="any" />
+
+    <label for="frequency">Frequency</label>
+    <select id="frequency">
+      <option value="">Select Frequency</option>
+      <option value="daily">Daily</option>
+      <option value="weekly">Weekly</option>
+      <option value="monthly">Monthly</option>
+    </select>
+
+    <button onclick="createRecurring()">Create Recurring Payment</button>
+
+    <p id="status"></p>
+
+    <hr>
+
+    <h3>Recurring Payment List</h3>
+
+    <button onclick="loadRecurring()">Load Recurring Payments</button>
+
+    <div id="list"></div>
+  </div>
+
+  <script>
+    async function createRecurring() {
+      const address = document.getElementById("address").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
+      const frequency = document.getElementById("frequency").value;
+      const status = document.getElementById("status");
+
+      if (!address || !amount || amount <= 0 || !frequency) {
+        status.innerText = "Please fill in all fields correctly.";
+        return;
+      }
+
+      status.innerText = "Processing recurring payment...";
+
+      try {
+        const res = await fetch("/api/transactions/recurring", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ address, amount, frequency })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          status.innerText = data.message || "Recurring payment created successfully.";
+          document.getElementById("address").value = "";
+          document.getElementById("amount").value = "";
+          document.getElementById("frequency").value = "";
+          loadRecurring();
+        } else {
+          status.innerText = data.message || "Failed to create recurring payment.";
+        }
+      } catch (err) {
+        status.innerText = "Error connecting to server.";
+      }
+    }
+
+    async function loadRecurring() {
+      const list = document.getElementById("list");
+
+      try {
+        const res = await fetch("/api/transactions/recurring");
+        const data = await res.json();
+
+        list.innerHTML = "";
+
+        if (!Array.isArray(data) || data.length === 0) {
+          list.innerHTML = "<p>No recurring payments yet.</p>";
+          return;
+        }
+
+        data.forEach(payment => {
+          const div = document.createElement("div");
+          div.className = "payment";
+
+          div.innerHTML = `
+            <strong>Recurring Payment</strong><br>
+            Amount: ${payment.amount ?? "N/A"}<br>
+            To: ${payment.address ?? "N/A"}<br>
+            Frequency: ${payment.frequency ?? "N/A"}<br>
+            Status: ${payment.status ?? "Active"}<br>
+            Next Execution: ${payment.nextExecution ?? "N/A"}<br>
+            <button onclick="cancelRecurring('${payment.id ?? ""}')">Cancel</button>
+          `;
+
+          list.appendChild(div);
+        });
+      } catch (err) {
+        list.innerHTML = "<p>Error loading recurring payments.</p>";
+      }
+    }
+
+    async function cancelRecurring(id) {
+      const status = document.getElementById("status");
+
+      if (!id) {
+        status.innerText = "Invalid recurring payment ID.";
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/transactions/recurring/" + id, {
+          method: "DELETE"
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          status.innerText = data.message || "Recurring payment cancelled.";
+          loadRecurring();
+        } else {
+          status.innerText = data.message || "Failed to cancel recurring payment.";
+        }
+      } catch (err) {
+        status.innerText = "Error connecting to server.";
+      }
+    }
+  </script>
+
+</body>
+</html>

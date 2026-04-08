@@ -2,58 +2,81 @@
 <html>
 <head>
   <title>Send Crypto</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    input, button { margin: 10px 0; padding: 8px; width: 250px; }
-  </style>
+  <link rel="stylesheet" href="/send.css">
 </head>
 <body>
+  <nav class="nav">
+    <a href="send.html">Send</a>
+    <a href="receive.html">Receive</a>
+    <a href="recurring.html">Recurring</a>
+    <a href="history.html">History</a>
+  </nav>
 
-<h2>Send Crypto</h2>
+  <div class="container">
+    <h2>Send Crypto</h2>
 
-<input id="address" placeholder="Recipient Address" />
-<br>
-<input id="amount" type="number" placeholder="Amount" />
-<br>
+    <label>Recipient Address</label>
+    <input type="text" id="address">
 
-<button onclick="sendCrypto()">Send</button>
+    <label>Amount</label>
+    <input type="number" id="amount">
 
-<p id="status"></p>
+    <label>Currency</label>
+    <select id="currency">
+      <option value="BTC">Bitcoin</option>
+      <option value="ETH">Ethereum</option>
+    </select>
 
-<script>
-async function sendCrypto() {
-  const address = document.getElementById("address").value;
-  const amount = document.getElementById("amount").value;
-  const status = document.getElementById("status");
+    <button onclick="sendCrypto()">Send</button>
 
-  status.innerText = "Processing transaction...";
+    <p id="message"></p>
+    <p id="status"></p>
+  </div>
 
-  // fake delay to simulate network latency
-  setTimeout(async () => {
-    try {
-      const res = await fetch("http://localhost:3000/api/transactions/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ address, amount })
-      });
+  <script>
+    async function sendCrypto() {
+      const address = document.getElementById("address").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
+      const currency = document.getElementById("currency").value;
+      const status = document.getElementById("status");
+      const msg = document.getElementById("message");
 
-      const data = await res.json();
-
-      if (res.ok) {
-        status.innerText =
-          `Success!\nTxID: ${data.txId}\nNew Balance: ${data.newBalance}`;
-      } else {
-        status.innerText = ` ${data.message}`;
+      if (!address || !amount || amount <= 0) {
+        msg.innerText = "❌ Please enter a valid address and amount";
+        msg.className = "error";
+        return;
       }
 
-    } catch (err) {
-      status.innerText = "Error connecting to server";
-    }
-  }, 1500);
-}
-</script>
+      status.innerText = "Processing transaction...";
+      msg.innerText = "";
+      msg.className = "";
 
+      try {
+        const res = await fetch("/api/transactions/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ amount, address, currency })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          status.innerText = `Success! TxID: ${data.txId || data.id || "N/A"}`;
+          msg.innerText = `✅ Sent ${amount} ${currency}${data.valueGBP ? ` (~£${data.valueGBP})` : ""}`;
+          msg.className = "success";
+        } else {
+          status.innerText = data.message || "Transaction failed";
+          msg.innerText = "❌ " + (data.message || "Transaction failed");
+          msg.className = "error";
+        }
+      } catch (err) {
+        status.innerText = "Error connecting to server";
+        msg.innerText = "❌ Error connecting to server";
+        msg.className = "error";
+      }
+    }
+  </script>
 </body>
 </html>

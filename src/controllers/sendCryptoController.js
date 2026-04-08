@@ -1,18 +1,27 @@
-import { sendCrypto } from "../transaction/transactionService.js";
+import { sendCrypto,
+  updateBalance, 
+  getTransactions 
+ } from "../transaction/transactionService.js";
 
-export const sendCryptoController = (req, res) => {
-  const { amount, address } = req.body;
+export const sendCryptoController = async (req, res) => {
+  const { walletId, amount, address, currency } = req.body;
 
-  const result = sendCrypto(Number(amount), address);
+  try {
+    // update balance
+    await updateBalance(walletId, amount);
 
-  if (result.success) {
-    res.json(result);
-  } else {
-    res.status(400).json(result);
+    // store transaction
+    await createTransaction(walletId, {
+      type: "send",
+      amount,
+      currency,
+      address,
+      valueGBP: amount * 30000 // or your API price
+    });
+
+    res.json({ success: true });
+
+  } catch (err) {
+    res.json({ success: false, message: "Transaction failed" });
   }
-};
-import { getTransactions } from "../transaction/transactionService.js";
-
-export const getTransactionHistory = (req, res) => {
-  res.json(getTransactions());
 };

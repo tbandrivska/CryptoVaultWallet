@@ -1,34 +1,30 @@
 <!DOCTYPE html>
+<nav class="nav">
+  <a href="send.html">Send</a>
+  <a href="receive.html">Receive</a>
+  <a href="recurring.html">Recurring</a>
+  <a href="history.html">History</a>
+</nav>
 <html>
 <head>
-  <title>Receive Crypto</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    .box { border: 1px solid #ccc; padding: 20px; width: 300px; }
-    button { margin-top: 10px; padding: 8px; }
-  </style>
+  <link rel="stylesheet" href="/receive.css">
 </head>
 <body>
 
-<h2>Receive Crypto</h2>
+<div class="container">
+  <h2>Receive Crypto</h2>
 
-<div class="box">
-  <p><strong>Your Wallet Address:</strong></p>
-  <p id="address">0x91bF72A9cD34Ef123456789</p>
+  <p>Your Wallet Address</p>
+  <div class="address-box" id="address">
+    0x91bF72A9cD34Ef123456789
+  </div>
 
   <button onclick="copyAddress()">Copy Address</button>
 
   <p id="copyMsg"></p>
 
-  <hr>
-
-  <p><strong>QR Code:</strong></p>
-  <img 
-    src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x91bF72A9cD34Ef123456789"
-    alt="QR Code"
-  >
+  <img src="YOUR_QR_URL_HERE" alt="QR Code">
 </div>
-
 <script>
 function copyAddress() {
   const address = document.getElementById("address").innerText;

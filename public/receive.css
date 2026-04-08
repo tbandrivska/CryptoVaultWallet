@@ -1,0 +1,101 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #020617, #0f172a);
+  color: #e2e8f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Container */
+.container {
+  background: #111827;
+  padding: 30px;
+  border-radius: 16px;
+  width: 350px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* Title */
+.container h2 {
+  margin-bottom: 20px;
+}
+
+/* Address box */
+.address-box {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  word-break: break-all;
+  margin-bottom: 15px;
+}
+
+/* Button */
+button {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* QR Code */
+img {
+  margin-top: 20px;
+  border-radius: 10px;
+  background: white;
+  padding: 5px;
+}
+
+/* Copy message */
+#copyMsg {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #22c55e;
+}
+.container {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.nav {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.nav a {
+  margin-right: 15px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.nav a:hover {
+  color: white;
+}
