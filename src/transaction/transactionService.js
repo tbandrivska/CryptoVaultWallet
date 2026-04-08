@@ -1,4 +1,4 @@
-import { fetchCoinPrice } from "coinPrices/coins.js";
+import { fetchCoinPrice } from "..coinPrices/coins.js";
 import { db } from "../config/db.js";
 
 // Update wallet balance by subtracting amount for a given walletId
