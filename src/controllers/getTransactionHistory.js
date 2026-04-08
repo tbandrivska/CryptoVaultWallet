@@ -1,18 +1,12 @@
 import { getTransactions } from "../transaction/transactionService.js";
 
 export const getTransactionHistory = async (req, res) => {
-  try {
-    const walletId = 1; // temporary mock wallet id for prototype
-    const transactions = await getTransactions(walletId);
+  const { walletId } = req.params;
 
-    return res.json({
-      success: true,
-      transactions
-    });
+  try {
+    const transactions = await getTransactions(walletId);
+    res.json(transactions);
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: "Could not load transaction history"
-    });
+    res.json([]);
   }
 };

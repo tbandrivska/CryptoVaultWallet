@@ -2,8 +2,19 @@ import { fetchCoinPrice } from "../../public/coinPrices/coins.js";
 import { db } from "../config/db.js";
 
 // Update wallet balance by subtracting amount for a given walletId
-export const updateBalance = async (walletId, amount) => {
-  await db.query("UPDATE wallets SET balance = balance - ? WHERE id = ?", [amount, walletId]);
+export const updateBalance = (walletId, amount) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      UPDATE wallets 
+      SET balance = balance - ? 
+      WHERE id = ?
+    `;
+
+    db.query(sql, [amount, walletId], (err, result) => {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
 };
 
 // Add a transaction and update balance if needed
@@ -12,7 +23,7 @@ export const addTransaction = async (walletId, tx) => {
     tx.status === "success" &&
     (tx.type === "send" || tx.type === "recurring-execution")
   ) {
-    await db.query("UPDATE wallets SET balance = balance - ? WHERE id = ?", [tx.amount, walletId]);
+    await updateBalance(walletId, tx.amount);
   }
   await db.query(
     "INSERT INTO transactions (id, wallet_id, type, currency, amount, price, valueGBP, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -89,14 +100,32 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
   };
 };
 
-// Get all transactions for a wallet
-export const getTransactions = async (walletId) => {
-  const [rows] = await db.query("SELECT * FROM transactions WHERE wallet_id = ? ORDER BY timestamp DESC", [walletId]);
-  return rows;
+export const getTransactions = (walletId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT * FROM transactions 
+      WHERE wallet_id = ?
+      ORDER BY timestamp DESC
+    `;
+
+    db.query(sql, [walletId], (err, results) => {
+      if (err) return reject(err);
+      resolve(results);
+    });
+  });
 };
 
 // Get balance for a wallet
-export const getBalance = async (walletId) => {
-  const [rows] = await db.query("SELECT balance FROM wallets WHERE id = ?", [walletId]);
-  return rows[0]?.balance ?? 0;
+export const getBalance = (walletId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT balance FROM wallets 
+      WHERE id = ?
+    `;
+
+    db.query(sql, [walletId], (err, results) => {
+      if (err) return reject(err);
+      resolve(results[0]?.balance ?? 0);
+    });
+  });
 };

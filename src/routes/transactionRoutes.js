@@ -17,7 +17,7 @@ router.get("/history", getTransactionHistory);
 router.post("/recurring", createRecurringController);
 
 router.get("/recurring", getRecurringController);
-
+router.get("/history/:walletId", getTransactionHistory);
 router.delete("/recurring/:id", cancelRecurringController);
 
 export default router;
