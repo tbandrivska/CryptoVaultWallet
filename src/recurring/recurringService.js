@@ -26,21 +26,23 @@ const calculateNextExecution = (frequency, fromDate = new Date()) => {
   return nextDate.toISOString();
 };
 
-const logRecurringTransaction = (type, payment, status, extra = {}) => {
-  addTransaction({
+const logRecurringTransaction = async (walletId, type, payment, status, extra = {}) => {
+  await addTransaction(walletId, {
     id: crypto.randomUUID(),
     type,
+    currency: "BTC",
     amount: payment.amount,
+    price: 0,
+    valueGBP: 0,
     address: payment.address,
-    frequency: payment.frequency,
-    recurringPaymentId: payment.id,
     status,
     timestamp: new Date().toISOString(),
     ...extra
   });
 };
 
-export const createRecurringPayment = (amount, address, frequency) => {
+export const createRecurringPayment = async (amount, address, frequency) => {
+  const walletId = 1; // prototype mock wallet
   const parsedAmount = Number(amount);
   const trimmedAddress = address?.trim();
   const normalizedFrequency = frequency?.trim().toLowerCase();
@@ -57,7 +59,9 @@ export const createRecurringPayment = (amount, address, frequency) => {
     return { success: false, message: "Invalid or missing frequency" };
   }
 
-  if (parsedAmount > getBalance()) {
+  const balance = await getBalance(walletId);
+
+  if (parsedAmount > balance) {
     return { success: false, message: "Insufficient funds" };
   }
 
@@ -73,7 +77,7 @@ export const createRecurringPayment = (amount, address, frequency) => {
   };
 
   recurringPayments.push(recurring);
-  logRecurringTransaction("recurring-created", recurring, "scheduled");
+  await logRecurringTransaction(walletId, "recurring-created", recurring, "scheduled");
 
   return { success: true, recurring };
 };
@@ -94,31 +98,30 @@ export const cancelRecurringPayment = (id) => {
   }
 
   payment.status = "cancelled";
-  logRecurringTransaction("recurring-cancelled", payment, "cancelled");
 
   return { success: true, payment };
 };
 
-cron.schedule("* * * * *", () => {
+cron.schedule("* * * * *", async () => {
+  const walletId = 1;
   const now = new Date();
 
   for (const payment of recurringPayments) {
     if (payment.status !== "active") continue;
 
     const nextExecutionDate = new Date(payment.nextExecution);
-
     if (nextExecutionDate > now) continue;
 
-    if (payment.amount <= getBalance()) {
-      logRecurringTransaction("recurring-execution", payment, "success");
-      payment.nextExecution = calculateNextExecution(payment.frequency, now);
-      console.log(`Recurring payment executed: ${payment.id}`);
+    const balance = await getBalance(walletId);
+
+    if (payment.amount <= balance) {
+      await logRecurringTransaction(walletId, "recurring-execution", payment, "success");
     } else {
-      logRecurringTransaction("recurring-execution", payment, "failed", {
+      await logRecurringTransaction(walletId, "recurring-execution", payment, "failed", {
         reason: "Insufficient funds"
       });
-      payment.nextExecution = calculateNextExecution(payment.frequency, now);
-      console.log(`Recurring payment failed due to insufficient funds: ${payment.id}`);
     }
+
+    payment.nextExecution = calculateNextExecution(payment.frequency, now);
   }
 });
