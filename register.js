@@ -1,45 +1,3 @@
-class User {
-    constructor(email, phoneNumber, password) {
-        this.userId = Math.floor(Math.random() * 10000);
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.hashedPassword = btoa(password);
-        this.createdAt = new Date().toISOString();
-        this.mfaEnabled = false;
-        this.mfaSecret = "";
-        this.role = "Customer";
-    }
-}
-
-class UserRegistry {
-    constructor() {
-        this.userList = [];
-        this.userList.push(new User("test@example.com", "07700900000", "Password123"));
-    }
-
-    registerNewUser(email, phoneNumber, password) {
-        let emailTaken = false;
-        for (let i = 0; i < this.userList.length; i++) {
-            if (this.userList[i].email === email) {
-                emailTaken = true;
-                break;
-            }
-        }
-
-        if (emailTaken) {
-            return { success: false, message: "Email is already registered." };
-        }
-
-        let newUser = new User(email, phoneNumber, password);
-        this.userList.push(newUser);
-        
-        console.log("Database Mock Updated:", this.userList);
-        return { success: true, message: "Account created successfully!" };
-    }
-}
-
-const registry = new UserRegistry();
-
 document.getElementById('registerForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
@@ -65,16 +23,37 @@ document.getElementById('registerForm').addEventListener('submit', function(even
         return;
     }
 
-    let result = registry.registerNewUser(email, phone, password);
+    let userData = {
+        email: email,
+        phoneNumber: phone,
+        password: password
+    };
 
-    if (result.success) {
-        messageBox.classList.add('alert-success');
-        messageBox.innerText = result.message;
-        setTimeout(() => {
-            window.location.href = "login.html";
-        }, 2000);
-    } else {
+    let serverURL = "http://localhost:3000/api/users/register"; 
+
+    fetch(serverURL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) { 
+            messageBox.classList.add('alert-success');
+            messageBox.innerText = "Account created successfully!";
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 2000);
+        } else {
+            messageBox.classList.add('alert-error');
+            messageBox.innerText = data.message || "Registration failed on the server.";
+        }
+    })
+    .catch(error => {
         messageBox.classList.add('alert-error');
-        messageBox.innerText = result.message;
-    }
+        messageBox.innerText = "Could not connect to the server. Make sure the backend is running!";
+        console.error("Fetch error:", error);
+    });
 });
