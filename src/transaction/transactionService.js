@@ -115,6 +115,24 @@ export const getTransactions = (walletId) => {
   });
 };
 
+// get the last transaction
+export const getLatestTransaction = (walletId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT * FROM transactions 
+      WHERE wallet_id = ?
+      ORDER BY timestamp DESC
+      LIMIT 1
+    `;
+
+    db.query(sql, [walletId], (err, results) => {
+      if (err) return reject(err);
+      // results is an array, so we return the first (and only) item
+      resolve(results.length > 0 ? results[0] : null);
+    });
+  });
+};
+
 // Get balance for a wallet
 export const getBalance = (walletId) => {
   return new Promise((resolve, reject) => {

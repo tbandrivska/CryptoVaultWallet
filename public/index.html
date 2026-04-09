@@ -3,52 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="index.css">
   <title>CryptoVault Dashboard</title>
 </head>
 <body>
-  <h1>Welcome to CryptoVault</h1>
-  <nav>
+
+  <nav class="top-nav">
+    <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
     <a href="/portfolio.html">Portfolio</a>
     <a href="/send.html">Send</a>
     <a href="/receive.html">Receive</a>
-    <a href="/history.html">History</a>
+    <a href="/recurring.html">Recurring</a>
+    <a href="/history.html" class="active">History</a>
   </nav>
-  <div id = coin>
-    <p>Current Bitcoin Price: <span id="bitcoinPrice">Loading...</span> <diV id="change"></diV></p>
 
-  </div>
+  <main class="dashboard-container fade-up">
+    <header class="hero-section">
+      <h1>Welcome to <span>CryptoVault</span></h1>
+      <p class="subtitle">Real-time market insights and secure asset management.</p>
+    </header>
 
-  <div id = lastTransaction>last transaction: </div>
+    <div class="grid-layout">
+      <section id="coin" class="card">
+        <div class="field-label">Market Overview</div>
+        <div class="coin-header">
+          <img id="coinImage" src="" alt="Coin Logo" width="32" style="display: none;">
+          <h2><span id="coinName">Loading...</span> <span id="coinSymbol"></span></h2>
+        </div>
+        <div class="price-display">
+          <span id="bitcoinPrice">Loading...</span>
+          <div id="change" class="badge">--</div>
+        </div>
+      </section>
 
+      <section id="lastTransaction" class="card">
+        <div class="field-label">Recent Activity</div>
+        <div class="transaction-item">
+          <div class="tx-icon">↓</div>
+          <div class="tx-info">
+            <p>Last Transaction</p>
+            <span class="text-3">Bitcoin Purchase</span>
+          </div>
+          <div class="tx-amount badge badge-muted">View Details</div>
+        </div>
+      </section>
+    </div>
+  </main>
 
   <script type='module'>
-    import { fetchCoinPrice } from './coinPrices/coins.js';
-    
-    const coinId = 'bitcoin';
-    const coinData = await fetchCoinPrice(coinId);
+      import { fetchCoinPrice } from '/coinPrices/coins.js';
 
-    if (coinData) {
-        // 1. Update Price
-        const priceElement = document.getElementById(`${coinId}Price`);
-        if (priceElement) {
-            priceElement.innerText = `£${coinData.price.toLocaleString()}`;
-        }
+      // 1. Fetch Market Data (Existing logic)
+      const coinId = 'bitcoin';
+      const coinData = await fetchCoinPrice(coinId);
 
-        // 2. Update Change and Symbol
-        const changeElement = document.getElementById('change');
-        if (changeElement) {
-            // Determine if it's up or down
-            const isPositive = coinData.change24h >= 0;
-            const symbol = isPositive ? '▲' : '▼';
-            const color = isPositive ? '#22c55e' : '#ef4444'; // Green vs Red
+      if (coinData) {
+          const imageElement = document.getElementById('coinImage');
+          if (imageElement && coinData.image) {
+              imageElement.src = coinData.image;
+              imageElement.style.display = 'block'; 
+              imageElement.alt = coinData.name;
+          }
 
-            // Format: ▲ 1.23% (using Math.abs to remove the minus sign from the number)
-            const formattedPercentage = Math.abs(coinData.change24h).toFixed(2);
-            
-            changeElement.innerText = `${symbol} ${formattedPercentage}%`;
-            changeElement.style.color = color;
-        }
-    }
+          document.getElementById('coinName').innerText = coinData.name;
+          document.getElementById('coinSymbol').innerText = coinData.symbol.toUpperCase();
+
+          const priceElement = document.getElementById(`${coinId}Price`);
+          if (priceElement) {
+              priceElement.innerText = `£${coinData.price.toLocaleString()}`;
+          }
+
+          const changeElement = document.getElementById('change');
+          if (changeElement) {
+              const isPositive = coinData.change24h >= 0;
+              const symbol = isPositive ? '▲' : '▼';
+              changeElement.className = isPositive ? 'badge badge-success' : 'badge badge-danger';
+              const formattedPercentage = Math.abs(coinData.change24h).toFixed(2);
+              changeElement.innerText = `${symbol} ${formattedPercentage}%`;
+          }
+      }
+
+      // 2. Fetch Latest Transaction logic
+      async function updateRecentActivity() {
+          try {
+              const walletId = 1; 
+              const response = await fetch(`/api/transactions/latest?walletId=${walletId}`);
+              
+              if (!response.ok) return;
+              
+              const tx = await response.json();
+
+              if (tx) {
+                  // Select the elements
+                  const txIcon = document.querySelector('#lastTransaction .tx-icon');
+                  const txInfo = document.querySelector('#lastTransaction .tx-info p');
+                  const txSub = document.querySelector('#lastTransaction .text-3');
+                  const txAmount = document.querySelector('#lastTransaction .tx-amount');
+
+                  // 1. Update the Icon based on Type
+                  if (tx.type === 'send') {
+                      txIcon.innerText = '↑';
+                  } else if (tx.type === 'receive') {
+                      txIcon.innerText = '↓';
+                  } else if (tx.type === 'buy' || tx.type === 'recurring-execution') {
+                      txIcon.innerText = '£'; // Or '$' if you prefer
+                  }
+
+                  // 2. Update the Text
+                  txInfo.innerText = `Recent ${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}`;
+                  txSub.innerText = `${tx.amount} ${tx.currency} to ${tx.address.substring(0, 6)}...`;
+                  
+                  // 3. Update the Amount (with the toFixed safety)
+                  const displayValue = tx.value_gbp || tx.valueGBP || 0;
+                  txAmount.innerText = `£${Number(displayValue).toFixed(2)}`;
+                  txAmount.className = "tx-amount badge badge-success"; 
+              }
+          } catch (err) {
+              console.error("Could not load latest transaction:", err);
+          }
+      }
+      updateRecentActivity();
   </script>
 </body>
 </html>

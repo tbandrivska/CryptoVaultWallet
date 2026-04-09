@@ -30,7 +30,8 @@ export async function fetchCoinPrice(coinId) {
                 price: coin.current_price,
                 change24h: coin.price_change_percentage_24h_in_currency,
                 symbol: coin.symbol,
-                name: coin.name
+                name: coin.name,
+                image: coin.image
             };
         }
 
@@ -140,11 +141,14 @@ export async function renderChart(coinId = 'bitcoin') {
     }
 
     const apiKey = 'CG-2UhE78yESRWdrAX3pU6fMsCZ';
-    const API_URL = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=gbp&days=7`;
+    const url = `/api/chart/${coinId}`;;
 
     try {
-        const response = await fetch(API_URL, {
-            headers: { 'x-cg-demo-api-key': apiKey }
+        const response = await fetch(url, {
+                headers: {
+            'x-cg-demo-api-key': apiKey,
+            'accept': 'application/json'
+            }
         });
         const data = await response.json();
 

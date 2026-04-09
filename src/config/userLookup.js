@@ -1,3 +1,5 @@
+import { db } from './db.js';
+
 export const findUserByUsername = (username) => {
   return new Promise((resolve, reject) => {
     const sql = "SELECT id, username FROM users WHERE username LIKE ?";
