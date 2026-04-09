@@ -1,6 +1,51 @@
+export async function fetchCoinPrice(coinId) {
+    const apiKey = 'CG-2UhE78yESRWdrAX3pU6fMsCZ';
+    const API_URL = `https://api.coingecko.com/api/v3/coins/markets`;
+
+    try {
+        const params = new URLSearchParams({
+            vs_currency: 'gbp',
+            ids: coinId, 
+            price_change_percentage: '24h'
+        });
+
+        const response = await fetch(`${API_URL}?${params}`, {
+            method: 'GET',
+            headers: {
+                'accept': 'application/json',
+                'x-cg-demo-api-key': apiKey
+            }
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const data = await response.json();
+        
+        
+        const coin = data.find(c => c.id === coinId);
+
+        if (coin) {
+            
+            return {
+                price: coin.current_price,
+                change24h: coin.price_change_percentage_24h_in_currency,
+                symbol: coin.symbol,
+                name: coin.name
+            };
+        }
+
+        return null;
+
+    } catch (err) {
+        console.error("Error fetching coin price:", err);
+        return null;
+    }
+}
 
 
-export async function fetchCoinPrice() {
+
+
+export async function fetchTop20CoinPrice() {
     const container = document.getElementById('priceContainer');
     const walletVal = document.getElementById('walletValue');
     const apiKey = 'CG-2UhE78yESRWdrAX3pU6fMsCZ';
@@ -47,11 +92,11 @@ export async function fetchCoinPrice() {
     container.innerHTML = ''; 
 
     data.forEach(coin => {
-        // 1. Create the 'box' (the div)
+        
         const card = document.createElement('div');
         card.className = 'coin-card';
 
-        // 2. Add the HTML inside the box
+        
         const changeColor = coin.price_change_percentage_24h >= 0 ? 'trend-up' : 'trend-down';
         const symbol = coin.price_change_percentage_24h >= 0 ? '▲' : '▼';
 

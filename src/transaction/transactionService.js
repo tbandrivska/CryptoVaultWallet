@@ -61,7 +61,7 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
 
   const price = await fetchCoinPrice(currency);
 
-  const valueGBP = amount * price;
+  const valueGBP = amount * price.price; // I changed the fethcCoinPrice function so now it works with this.
 
   await db.query("UPDATE wallets SET balance = balance - ? WHERE id = ?", [amount, walletId]);
 

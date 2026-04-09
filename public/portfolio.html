@@ -8,7 +8,7 @@
 </head>
 <body id = "portfolio">
     <header class="top-bar"></header>
-    <div id="priceContainer">something is wrong</div>
+    <div id="priceContainer">Loading...</div>
     
     <div class = 'dashboard'>
         
@@ -21,9 +21,9 @@
 </body>
 
 <script type="module">
-    import { fetchCoinPrice, renderChart } from './coinPrices/coins.js';
+    import { fetchTop20CoinPrice, renderChart } from './coinPrices/coins.js';
     document.addEventListener('DOMContentLoaded', () => {
-        fetchCoinPrice();
+        fetchTop20CoinPrice();
         renderChart();
     });
 </script>

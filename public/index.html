@@ -13,5 +13,42 @@
     <a href="/receive.html">Receive</a>
     <a href="/history.html">History</a>
   </nav>
+  <div id = coin>
+    <p>Current Bitcoin Price: <span id="bitcoinPrice">Loading...</span> <diV id="change"></diV></p>
+
+  </div>
+
+  <div id = lastTransaction>last transaction: </div>
+
+
+  <script type='module'>
+    import { fetchCoinPrice } from './coinPrices/coins.js';
+    
+    const coinId = 'bitcoin';
+    const coinData = await fetchCoinPrice(coinId);
+
+    if (coinData) {
+        // 1. Update Price
+        const priceElement = document.getElementById(`${coinId}Price`);
+        if (priceElement) {
+            priceElement.innerText = `£${coinData.price.toLocaleString()}`;
+        }
+
+        // 2. Update Change and Symbol
+        const changeElement = document.getElementById('change');
+        if (changeElement) {
+            // Determine if it's up or down
+            const isPositive = coinData.change24h >= 0;
+            const symbol = isPositive ? '▲' : '▼';
+            const color = isPositive ? '#22c55e' : '#ef4444'; // Green vs Red
+
+            // Format: ▲ 1.23% (using Math.abs to remove the minus sign from the number)
+            const formattedPercentage = Math.abs(coinData.change24h).toFixed(2);
+            
+            changeElement.innerText = `${symbol} ${formattedPercentage}%`;
+            changeElement.style.color = color;
+        }
+    }
+  </script>
 </body>
 </html>
