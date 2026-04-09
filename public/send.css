@@ -1,121 +1,66 @@
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Arial, sans-serif;
-}
+@import url('/shared.css');
 
 body {
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: #f1f5f9;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  height: 100vh;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 96px 24px 40px;
 }
 
-/* Container */
-.container {
-  background: #111827;
-  padding: 30px;
-  border-radius: 16px;
-  width: 350px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
-
-/* Title */
-.container h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-weight: 600;
-}
-
-/* Labels */
-label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 14px;
-  color: #94a3b8;
-}
-
-/* Inputs */
-input {
+.page-wrap {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  border: none;
-  background: #1e293b;
-  color: white;
-  outline: none;
-  transition: 0.2s;
+  max-width: 480px;
+  animation: fadeUp 0.42s var(--ease) both;
 }
 
-input:focus {
-  box-shadow: 0 0 0 2px #22c55e;
+/* Page header */
+.page-head {
+  margin-bottom: 28px;
 }
 
-/* Button */
-button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
+.page-head h1 {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  line-height: 1.15;
+}
+.page-head h1 span { color: var(--accent); }
+
+.page-head p {
+  color: var(--text-2);
+  font-size: 0.875rem;
+  margin-top: 7px;
 }
 
-button:hover {
-  transform: translateY(-1px);
-  opacity: 0.95;
+/* Send card */
+.send-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-2xl);
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Message */
-#message {
-  margin-top: 15px;
-  text-align: center;
-  font-size: 14px;
-}
-
-/* Success / Error states */
-.success {
-  color: #4ade80;
-}
-
-.error {
-  color: #f87171;
-}
-.container {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.nav {
+.send-card::after {
+  content: '';
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-2) 30%, var(--border-3) 50%, var(--border-2) 70%, transparent);
 }
 
-.nav a {
-  margin-right: 15px;
-  color: #94a3b8;
-  text-decoration: none;
-  font-size: 14px;
+/* Amount + currency row */
+.amount-row {
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  gap: 12px;
+  margin-top: 18px;
 }
 
-.nav a:hover {
-  color: white;
-}
+.amount-row .field { margin-top: 0; }

@@ -1,38 +1,55 @@
 <!DOCTYPE html>
-<nav class="nav">
-  <a href="send.html">Send</a>
-  <a href="receive.html">Receive</a>
-  <a href="recurring.html">Recurring</a>
-  <a href="history.html">History</a>
-</nav>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoVault — Receive</title>
+  <link rel="stylesheet" href="/shared.css">
   <link rel="stylesheet" href="/receive.css">
 </head>
 <body>
 
-<div class="container">
-  <h2>Receive Crypto</h2>
+<nav class="top-nav">
+  <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
+  <a href="/index.html">Home</a>
+  <a href="/send.html">Send</a>
+  <a href="/receive.html" class="active">Receive</a>
+  <a href="/recurring.html">Recurring</a>
+  <a href="/history.html">History</a>
+</nav>
 
-  <p>Your Wallet Address</p>
-  <div class="address-box" id="address">
-    0x91bF72A9cD34Ef123456789
+<div class="page-wrap">
+
+  <div class="page-head">
+    <h1>Receive <span>Crypto</span></h1>
+    <p>Share your address or QR code to receive funds</p>
   </div>
 
-  <button onclick="copyAddress()">Copy Address</button>
+  <div class="receive-card">
 
-  <p id="copyMsg"></p>
+    <p class="address-label">Your Wallet Address</p>
+    <div class="address-box" id="address">
+      0x91bF72A9cD34Ef123456789
+    </div>
 
-  <img src="YOUR_QR_URL_HERE" alt="QR Code">
+    <button class="btn btn-primary" style="margin-top:0" onclick="copyAddress()">
+      Copy Address
+    </button>
+
+    <p class="copy-confirm" id="copyMsg"></p>
+
+  </div>
 </div>
+
 <script>
 function copyAddress() {
-  const address = document.getElementById("address").innerText;
-  navigator.clipboard.writeText(address);
-
-  document.getElementById("copyMsg").innerText = "✅ Address copied!";
+  const address = document.getElementById('address').innerText.trim();
+  navigator.clipboard.writeText(address).then(() => {
+    const el = document.getElementById('copyMsg');
+    el.textContent = '✓ Address copied to clipboard';
+    setTimeout(() => { el.textContent = ''; }, 3000);
+  });
 }
 </script>
-
 </body>
 </html>

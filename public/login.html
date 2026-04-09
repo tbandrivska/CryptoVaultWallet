@@ -3,43 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CryptoVaultWallet - Login</title>
+  <title>CryptoVault — Sign In</title>
+  <link rel="stylesheet" href="/shared.css">
   <link rel="stylesheet" href="/login.css">
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <h1>CryptoVaultWallet</h1>
-      <p class="subtitle">Login to your wallet</p>
 
-      <form action="/login" method="POST">
-        <label for="email">Email</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="Enter email"
-          required
-        >
+<div class="auth-wrap">
 
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="Enter password"
-          required
-        >
+  <div class="brand">
+    <div class="brand-icon">🔐</div>
+    <h1>Crypto<span>Vault</span></h1>
+    <p>Sign in to manage your wallet</p>
+  </div>
 
-        <button type="submit">Login</button>
-      </form>
+  <div class="auth-card">
+    <form action="/login" method="POST">
 
-      <div class="demo-box">
-        <p><strong>Prototype demo credentials</strong></p>
-        <p>Email: demo@cryptovault.com</p>
-        <p>Password: Password123</p>
+      <div class="field">
+        <label class="field-label" for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required>
+      </div>
+
+      <div class="field" style="margin-top:18px">
+        <label class="field-label" for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Sign In →</button>
+    </form>
+
+    <div class="demo-box">
+      <p class="demo-box-label">🔑 Demo Credentials</p>
+      <div class="demo-row">
+        <span class="demo-key">Email</span>
+        <span class="demo-val">demo@cryptovault.com</span>
+      </div>
+      <div class="demo-row">
+        <span class="demo-key">Password</span>
+        <span class="demo-val">Password123</span>
       </div>
     </div>
   </div>
+
+  <p class="auth-footer">
+    Don't have an account? <a href="/register.html">Create one</a>
+  </p>
+
+</div>
 </body>
 </html>
