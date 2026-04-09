@@ -32,18 +32,6 @@
 
       <button class="btn btn-primary" type="submit">Sign In →</button>
     </form>
-
-    <div class="demo-box">
-      <p class="demo-box-label">🔑 Demo Credentials</p>
-      <div class="demo-row">
-        <span class="demo-key">Email</span>
-        <span class="demo-val">demo@cryptovault.com</span>
-      </div>
-      <div class="demo-row">
-        <span class="demo-key">Password</span>
-        <span class="demo-val">Password123</span>
-      </div>
-    </div>
   </div>
 
   <p class="auth-footer">
@@ -51,5 +39,14 @@
   </p>
 
 </div>
+<script>
+  if (window.location.search.includes('error=1')) {
+    const err = document.createElement('p');
+    err.textContent = 'Invalid email or password.';
+    err.style.cssText = 'color:#ff4d6a;font-size:0.85rem;font-weight:600;margin-top:12px;text-align:center;';
+    document.querySelector('form').appendChild(err);
+  }
+</script>
+</body>
 </body>
 </html>

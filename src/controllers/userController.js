@@ -1,5 +1,7 @@
+import { registerUser } from '../config/userService.js';
+
 export const register = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, phoneNumber, password } = req.body;
 
   try {
     await registerUser(username, email, password);

@@ -1,4 +1,4 @@
-import { db } from "../db.js";
+import { db } from "./db.js";
 
 export const registerUser = (username, email, password) => {
   return new Promise((resolve, reject) => {
