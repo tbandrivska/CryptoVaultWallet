@@ -1,118 +1,180 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+@import url('/shared.css');
 
-/* Layout Basics */
-body {
-    margin: 0;
-    font-family: 'Inter', -apple-system, sans-serif;
-    background-color: #f4f7f6;
+body { padding-top: 64px; }
+
+/* ── Wallet value chip in nav ── */
+#walletValue {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  margin-left: auto;
+  padding: 6px 14px;
+  background: var(--accent-bg);
+  border: 1px solid rgba(0,203,168,0.2);
+  border-radius: var(--r-md);
+  white-space: nowrap;
 }
 
-/* Fixed Top Bar */
-.top-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4.375rem;
-    background-color: #121212;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    padding: 0 2rem;
-    z-index: 1000;
-    box-shadow: 0 0.125rem 0.625rem rgba(0,0,0,0.3);
-}
-
-/* Wide Sidebar */
+/* ── Sidebar ── */
 #priceContainer {
-    position: fixed;
-    left: 0;
-    top: 4.375rem;
-    width: 23.75rem; /* Bigger size for better readability */
-    height: calc(100vh - 4.375rem);
-    overflow-y: auto;
-    background-color: #fff;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    border-right: 1px solid #e0e0e0;
-    box-sizing: border-box;
+  position: fixed;
+  left: 0;
+  top: 64px;
+  width: 272px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 100;
 }
 
-/* Individual Coin Cards */
+/* ── Coin cards ── */
 .coin-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    background: #ffffff;
-    border: 0.0625rem solid #f0f0f0;
-    transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition:
+    border-color var(--t-base) var(--ease),
+    background   var(--t-base) var(--ease);
 }
 
 .coin-card:hover {
-    transform: translateY(-0.125rem);
-    box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.08);
-    border-color: #48d1cc;
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
 
 .coin-main {
-    display: flex;
-    align-items: center;
-    gap: 0.9375rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 .coin-logo {
-    width: 2rem;
-    height: 2rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .coin-info {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .coin-name {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #1a1a1a;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .coin-price {
-    color: #666;
-    font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-2);
 }
 
-/* Trend Styling */
 .coin-trend {
-    font-weight: 700;
-    font-size: 0.95rem;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
-.trend-up { color: #00b894; }
-.trend-down { color: #d63031; }
+.trend-up   { color: var(--success); }
+.trend-down { color: var(--danger);  }
 
-/* Add this to portfolio.css */
-.chart-container {
-    margin-top: 2rem;
-    height: 25rem;
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-
+/* ── Main dashboard ── */
 .dashboard {
-    margin-top: 6.25rem;
-    margin-left: 25rem; /* Account for sidebar width */
-    width: calc(100% - 28.125rem); /* Fill the remaining width */
+  margin-left: 272px;
+  padding: 32px;
+  min-height: calc(100vh - 64px);
+}
+
+.dash-header {
+  margin-bottom: 24px;
+}
+
+.dash-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--text);
+}
+
+.dash-header h2 span { color: var(--accent); }
+
+.dash-header p {
+  color: var(--text-2);
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+/* ── Chart card ── */
+.chart-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-2xl);
+  padding: 24px;
+  height: 380px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-container::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-2) 30%, var(--border-3) 50%, var(--border-2) 70%, transparent);
+  pointer-events: none;
+}
+
+.wallet-value-card {
+  background: var(--surface);
+  border: 1px solid rgba(0, 203, 168, 0.25);
+  border-radius: var(--r-xl);
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 0 40px rgba(0, 203, 168, 0.06);
+}
+
+.wallet-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 8px;
 }
 
 #walletValue {
-    font-family: 'Inter', sans-serif;
-    font-weight: 1000; /* Extra bold for the price */
-    letter-spacing: -0.02em; /* Tighten it slightly for a premium feel */
-    color: #000000
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  background: none;
+  border: none;
+  padding: 0;
 }

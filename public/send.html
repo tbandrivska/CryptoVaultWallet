@@ -1,82 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Send Crypto</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoVault — Send</title>
+  <link rel="stylesheet" href="/shared.css">
   <link rel="stylesheet" href="/send.css">
 </head>
 <body>
-  <nav class="nav">
-    <a href="send.html">Send</a>
-    <a href="receive.html">Receive</a>
-    <a href="recurring.html">Recurring</a>
-    <a href="history.html">History</a>
-  </nav>
 
-  <div class="container">
-    <h2>Send Crypto</h2>
+<nav class="top-nav">
+  <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
+  <a href="/index.html">Home</a>
+  <a href="/send.html" class="active">Send</a>
+  <a href="/receive.html">Receive</a>
+  <a href="/recurring.html">Recurring</a>
+  <a href="/history.html">History</a>
+</nav>
 
-    <label>Recipient Address</label>
-    <input type="text" id="address">
+<div class="page-wrap">
 
-    <label>Amount</label>
-    <input type="number" id="amount">
-
-    <label>Currency</label>
-    <select id="currency">
-      <option value="BTC">Bitcoin</option>
-      <option value="ETH">Ethereum</option>
-    </select>
-
-    <button onclick="sendCrypto()">Send</button>
-
-    <p id="message"></p>
-    <p id="status"></p>
+  <div class="page-head">
+    <h1>Send <span>Crypto</span></h1>
+    <p>Transfer funds to any wallet address</p>
   </div>
 
-  <script>
-    async function sendCrypto() {
-      const address = document.getElementById("address").value.trim();
-      const amount = parseFloat(document.getElementById("amount").value);
-      const currency = document.getElementById("currency").value;
-      const status = document.getElementById("status");
-      const msg = document.getElementById("message");
+  <div class="send-card">
 
-      if (!address || !amount || amount <= 0) {
-        msg.innerText = "❌ Please enter a valid address and amount";
-        msg.className = "error";
-        return;
-      }
+    <div class="field">
+      <label class="field-label" for="address">Recipient Address</label>
+      <input type="text" id="address" placeholder="0x... or bc1...">
+    </div>
 
-      status.innerText = "Processing transaction...";
-      msg.innerText = "";
-      msg.className = "";
+    <div class="amount-row">
+      <div class="field">
+        <label class="field-label" for="amount">Amount</label>
+        <input type="number" id="amount" placeholder="0.00000000" step="any" min="0">
+      </div>
+      <div class="field">
+        <label class="field-label" for="currency">Currency</label>
+        <select id="currency">
+          <option value="BTC">₿ BTC</option>
+          <option value="ETH">Ξ ETH</option>
+        </select>
+      </div>
+    </div>
 
-      try {
-        const res = await fetch("/api/transactions/send", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ amount, address, currency })
-        });
+    <button class="btn btn-primary" id="sendBtn" onclick="sendCrypto()">
+      Send Transaction →
+    </button>
 
-        const data = await res.json();
+    <div class="status-strip" id="statusStrip">
+      <span class="spinner" id="spinner" style="display:none"></span>
+      <span id="statusMsg"></span>
+    </div>
 
-        if (res.ok && data.success) {
-          status.innerText = `Success! TxID: ${data.txId || data.id || "N/A"}`;
-          msg.innerText = `✅ Sent ${amount} ${currency}${data.valueGBP ? ` (~£${data.valueGBP})` : ""}`;
-          msg.className = "success";
-        } else {
-          status.innerText = data.message || "Transaction failed";
-          msg.innerText = "❌ " + (data.message || "Transaction failed");
-          msg.className = "error";
-        }
-      } catch (err) {
-        status.innerText = "Error connecting to server";
-        msg.innerText = "❌ Error connecting to server";
-        msg.className = "error";
-      }
+  </div>
+</div>
+
+<script>
+async function sendCrypto() {
+  const address  = document.getElementById('address').value.trim();
+  const amount   = parseFloat(document.getElementById('amount').value);
+  const currency = document.getElementById('currency').value;
+  const strip    = document.getElementById('statusStrip');
+  const msg      = document.getElementById('statusMsg');
+  const spinner  = document.getElementById('spinner');
+  const btn      = document.getElementById('sendBtn');
+
+  if (!address || !amount || amount <= 0) {
+    strip.className = 'status-strip show error';
+    spinner.style.display = 'none';
+    msg.textContent = 'Please enter a valid address and amount.';
+    return;
+  }
+
+  btn.disabled = true;
+  strip.className = 'status-strip show info';
+  spinner.style.display = '';
+  msg.textContent = 'Processing transaction…';
+
+  try {
+    const res  = await fetch('/api/transactions/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, address, currency })
+    });
+    const data = await res.json();
+
+    spinner.style.display = 'none';
+    btn.disabled = false;
+
+    if (res.ok && data.success) {
+      strip.className = 'status-strip show success';
+      msg.textContent = `✓ Sent ${amount} ${currency}${data.valueGBP ? ` · £${data.valueGBP}` : ''}. TxID: ${data.txId || data.id || 'N/A'}`;
+      document.getElementById('address').value = '';
+      document.getElementById('amount').value  = '';
+    } else {
+      strip.className = 'status-strip show error';
+      msg.textContent = data.message || 'Transaction failed.';
     }
-  </script>
+  } catch {
+    spinner.style.display = 'none';
+    btn.disabled = false;
+    strip.className = 'status-strip show error';
+    msg.textContent = 'Could not reach the server.';
+  }
+}
+</script>
 </body>
 </html>

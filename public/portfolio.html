@@ -3,16 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/shared.css">
     <link rel="stylesheet" href="portfolio.css">
     <title>portfolio</title>
 </head>
 <body id = "portfolio">
-    <header class="top-bar"></header>
+    <nav class="top-nav">
+        <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
+        <a href="/index.html" style="margin-left:auto">Home</a>
+        <a href="/portfolio.html" class="active">Portfolio</a>
+        <a href="/send.html">Send</a>
+        <a href="/receive.html">Receive</a>
+        <a href="/recurring.html">Recurring</a>
+        <a href="/history.html">History</a>
+    </nav>
+
     <div id="priceContainer">Loading...</div>
     
     <div class = 'dashboard'>
         
-        <div id="walletValue">Wallet Value: £0.00</div>
+        <div class="wallet-value-card">
+            <p class="wallet-label">Total Wallet Value</p>
+            <p id="walletValue">£0.00</p>
+        </div>
 
         <div class="chart-container">
             <canvas id="coinChart"></canvas>

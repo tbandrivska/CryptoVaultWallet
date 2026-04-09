@@ -84,7 +84,7 @@ export async function fetchTop20CoinPrice() {
 
         if (coin) {
             const walletValue = walletBalance * coin.current_price;
-            walletVal.innerHTML = `Wallet Value: £${walletValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            walletVal.innerHTML = `£${walletValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         }
 
 
