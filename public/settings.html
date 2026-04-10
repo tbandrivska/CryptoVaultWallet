@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoVault — Settings</title>
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/settings.css">
+</head>
+<body>
+  <nav class="top-nav">
+    <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
+    <a href="/index.html" style="margin-left:auto">Home</a>
+    <a href="/portfolio.html">Portfolio</a>
+    <a href="/send.html">Send</a>
+    <a href="/receive.html">Receive</a>
+    <a href="/recurring.html">Recurring</a>
+    <a href="/history.html">History</a>
+    <a href="/settings.html" class="active">Settings</a>
+  </nav>
+
+  <div class="page-wrap">
+    <div class="page-head">
+      <h1>Account <span>Settings</span></h1>
+      <p>Manage your CryptoVault account and preferences</p>
+    </div>
+
+    <div class="settings-card">
+      <h2>Manage Wallets</h2>
+      <button class="btn btn-primary" onclick="alert('Wallet management coming soon!')">Manage Wallets</button>
+    </div>
+
+    <div class="settings-card">
+      <h2>Open Account</h2>
+      <label class="checkbox-label">
+        <input type="checkbox" id="openAccount" onchange="toggleOpenAccount()">
+        Open account (allow others to send you crypto)
+      </label>
+      <p id="openAccountStatus" class="status-text"></p>
+    </div>
+
+    <div class="settings-card">
+      <h2>Change Username</h2>
+      <form id="usernameForm" onsubmit="changeUsername(event)">
+        <div class="input-group">
+          <label for="newUsername">New Username</label>
+          <input type="text" id="newUsername" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Change Username</button>
+        <p id="usernameMsg" class="status-text"></p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleOpenAccount() {
+      const checked = document.getElementById('openAccount').checked;
+      const status = document.getElementById('openAccountStatus');
+      status.textContent = checked ? "Your account is now open to receive crypto." : "Your account is private.";
+      status.style.color = checked ? "var(--success)" : "var(--text-2)";
+    }
+
+    function changeUsername(event) {
+      event.preventDefault();
+      const newUsername = document.getElementById('newUsername').value.trim();
+      const msg = document.getElementById('usernameMsg');
+      if (newUsername.length < 3) {
+        msg.textContent = "Username must be at least 3 characters.";
+        msg.style.color = "var(--danger)";
+        return;
+      }
+      // Here you would send a request to your backend to change the username
+      msg.textContent = "Username changed successfully!";
+      msg.style.color = "var(--success)";
+      document.getElementById('newUsername').value = "";
+    }
+  </script>
+</body>
+</html>
