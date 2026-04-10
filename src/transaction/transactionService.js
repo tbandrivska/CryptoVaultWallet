@@ -60,7 +60,7 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
 
   const price = await fetchCoinPrice(currency);
 
-  const valueGBP = amount * price;
+  const valueGBP = amount * price.price; // I changed the fethcCoinPrice function so now it works with this.
 
   await db.query("UPDATE wallets SET balance = balance - ? WHERE id = ?", [amount, walletId]);
 
@@ -108,6 +108,24 @@ export const getTransactions = (walletId) => {
     db.query(sql, [walletId], (err, results) => {
       if (err) return reject(err);
       resolve(results);
+    });
+  });
+};
+
+// get the last transaction
+export const getLatestTransaction = (walletId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT * FROM transactions 
+      WHERE wallet_id = ?
+      ORDER BY timestamp DESC
+      LIMIT 1
+    `;
+
+    db.query(sql, [walletId], (err, results) => {
+      if (err) return reject(err);
+      // results is an array, so we return the first (and only) item
+      resolve(results.length > 0 ? results[0] : null);
     });
   });
 };
