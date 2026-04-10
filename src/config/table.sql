@@ -25,8 +25,18 @@ CREATE TABLE transactions (
   address VARCHAR(255),
   value_gbp DECIMAL(18,2),
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  price DECIMAL(18,8),
+  status VARCHAR(20),
   FOREIGN KEY (wallet_id) REFERENCES wallets(id)
 );
-ALTER TABLE transactions
-  ADD COLUMN price DECIMAL(18,8),
-  ADD COLUMN status VARCHAR(20);
+
+  
+CREATE TABLE profiles (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) UNIQUE, 
+  displayname VARCHAR(50), 
+  tags VARCHAR(100),
+  addresses VARCHAR(200),
+  bio VARCHAR(500),
+  FOREIGN KEY (username) REFERENCES users(username)
+)

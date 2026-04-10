@@ -1,6 +1,7 @@
 document.getElementById('registerForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
+    let username = document.getElementById('username').value;
     let email = document.getElementById('email').value;
     let phone = document.getElementById('phone').value;
     let password = document.getElementById('password').value;
@@ -24,6 +25,7 @@ document.getElementById('registerForm').addEventListener('submit', function(even
     }
 
     let userData = {
+        username: username,
         email: email,
         phoneNumber: phone,
         password: password

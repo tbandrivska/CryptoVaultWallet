@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Profiles</title>
+    <link rel="stylesheet" href="/publicprofile.css">
+</head>
+<body>
+    <nav class="top-nav">
+        <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
+        <a href="/index.html" style="margin-left:auto">Home</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/send.html">Send</a>
+        <a href="/receive.html">Receive</a>
+        <a href="/recurring.html">Recurring</a>
+        <a href="/history.html">History</a>
+        <a href="/publicprofile.html" class="active">Public Profile</a>
+        <a href="/settings.html">Settings</a>
+        <a href="/logout">Logout</a>
+    </nav>
+  <div class="page-head">
+      <h1> Public <span>Profiles</span></h1>
+      <p>Create or Browse User Public Profiles.</p>
+  </div>
+    <div class="container">
+        <div class="button-group">
+            <button class="active" onclick="showSection('create')">Create Profile</button>
+            <button onclick="showSection('browse')">Browse Profiles</button>
+        </div>
+
+        <div id="create" class="content active">
+            <form>
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="bio">Bio:</label>
+                    <textarea id="bio"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="acceptedCryptos">Accepted Cryptocurrencies:</label>
+                    <div id="acceptedCryptos" class="crypto-select"></div>
+                </div>
+                <div id="create-message" class="form-message"></div>
+                <button class="btn btn-primary" type="submit">Create Profile</button>
+            </form>
+        </div>
+
+        <div id="browse" class="content">
+            <div class="profiles-help">Click a profile card to view more.</div>
+            <input type="text" id="profile-search" placeholder="Search by Name, or &quot@&quot + username." oninput="filterProfiles(this.value)">
+            <div class="profiles-list">
+                <!-- Profiles will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/publicprofile.js"></script>
+</body>
+</html>
