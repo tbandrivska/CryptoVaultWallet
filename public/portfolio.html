@@ -11,6 +11,7 @@
     <nav class="top-nav">
         <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
         <a href="/index.html" style="margin-left:auto">Home</a>
+        <a href="topup.html">Top Up</a>
         <a href="/portfolio.html" class="active">Portfolio</a>
         <a href="/send.html">Send</a>
         <a href="/receive.html">Receive</a>
@@ -26,7 +27,7 @@
     <div class = 'dashboard'>
         
         <div class="wallet-value-card">
-            <p class="wallet-label">Total Wallet Value</p>
+            <p class="wallet-label">Total Balance</p>
             <p id="walletValue">£0.00</p>
         </div>
 
@@ -45,5 +46,94 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<div class="wallets-list-card settings-card" style="margin: 24px 0;">
+  <h2>Your Wallets</h2>
+  <div id="walletsList">Loading...</div>
+</div>
+<script>
+async function loadWallets() {
+  // For demo, userId=1. Replace with actual userId if needed.
+  const res = await fetch('/api/transactions/wallets/1');
+  const wallets = await res.json();
+  const list = document.getElementById('walletsList');
+  if (!Array.isArray(wallets) || wallets.length === 0) {
+    list.innerHTML = "<p>No wallets found.</p>";
+    return;
+  }
+  list.innerHTML = wallets.map(w =>
+    `<div class="wallet-row">
+      <span class="wallet-currency">${w.currency}</span>
+      <span class="wallet-balance">${Number(w.balance).toLocaleString(undefined, {maximumFractionDigits: 8})} ${w.currency === 'GBP' ? '£' : w.currency}</span>
+    </div>`
+  ).join('');
+}
+loadWallets();
+</script>
+<script>
+async function updateWalletValue() {
+  const res = await fetch('/api/transactions/wallets/1');
+  const wallets = await res.json();
+  const gbpWallet = wallets.find(w => w.currency === 'GBP');
+  const walletValueElem = document.getElementById('walletValue');
+  if (gbpWallet) {
+    walletValueElem.textContent = `£${Number(gbpWallet.balance).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+  } else {
+    walletValueElem.textContent = "£0.00";
+  }
+}
+updateWalletValue();
+</script>
+<div class="settings-card buy-crypto-card" style="margin: 64px 24px 0;">
+  <h2>Buy Cryptocurrency</h2>
+  <form id="buyForm">
+    <div class="input-group">
+      <label for="buyCurrency">Currency</label>
+      <select id="buyCurrency">
+        <option value="BTC">Bitcoin (BTC)</option>
+        <option value="ETH">Ethereum (ETH)</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label for="buyAmount">Amount (GBP)</label>
+      <input type="number" id="buyAmount" min="1" step="1" placeholder="Amount in GBP" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Buy</button>
+    <div id="buyMsg" class="status-text"></div>
+  </form>
+</div>
 
+
+
+
+
+<script>
+document.getElementById('buyForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const currency = document.getElementById('buyCurrency').value;
+  const amount = parseFloat(document.getElementById('buyAmount').value);
+  const msg = document.getElementById('buyMsg');
+  msg.textContent = '';
+  if (isNaN(amount) || amount <= 0) {
+    msg.textContent = "Enter a valid amount.";
+    msg.style.color = "var(--danger)";
+    return;
+  }
+  const res = await fetch('/api/transactions/buy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: 1, currency, amount })
+  });
+  const data = await res.json();
+  if (data.success) {
+    msg.textContent = `Bought ${data.cryptoAmount} ${currency} for £${amount.toFixed(2)}!`;
+    msg.style.color = "var(--success)";
+    document.getElementById('buyAmount').value = '';
+    loadWallets(); // Refresh wallet balances
+    if (typeof updateWalletValue === 'function') updateWalletValue();
+  } else {
+    msg.textContent = data.message || "Purchase failed.";
+    msg.style.color = "var(--danger)";
+  }
+});
+</script>
 </html>

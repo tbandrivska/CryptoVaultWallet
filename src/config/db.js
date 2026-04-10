@@ -5,7 +5,7 @@ export const db = mysql.createConnection({
   user: "root",
   password: "",
   database: "crypto_wallet"
-});
+}).promise();
 
 db.connect(err => {
   if (err) {

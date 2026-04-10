@@ -51,9 +51,19 @@ export async function fetchTop20CoinPrice() {
     const walletVal = document.getElementById('walletValue');
     const apiKey = 'CG-2UhE78yESRWdrAX3pU6fMsCZ';
     const API_URL = 'https://api.coingecko.com/api/v3/coins/markets';
-    
-    const walletBalance = 100; 
-    const coinType = 'bitcoin'; 
+
+    // Fetch the user's GBP wallet balance from the backend
+    let walletBalance = 0;
+    try {
+        const res = await fetch('/api/transactions/wallets/1'); // Replace 1 with actual userId if needed
+        const wallets = await res.json();
+        const gbpWallet = wallets.find(w => w.currency === 'GBP');
+        walletBalance = gbpWallet ? Number(gbpWallet.balance) : 0;
+    } catch (err) {
+        console.error("Error fetching GBP wallet:", err);
+        walletBalance = 0;
+    }
+    const coinType = 'bitcoin';
 
     try {
         const params = new URLSearchParams({

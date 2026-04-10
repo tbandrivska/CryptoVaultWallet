@@ -39,4 +39,4 @@ CREATE TABLE profiles (
   addresses VARCHAR(200),
   bio VARCHAR(500),
   FOREIGN KEY (username) REFERENCES users(username)
-)
+)ALTER TABLE wallets ADD COLUMN name VARCHAR(50) DEFAULT NULL;

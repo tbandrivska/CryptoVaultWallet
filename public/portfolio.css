@@ -178,3 +178,60 @@ body { padding-top: 64px; }
   border: none;
   padding: 0;
 }
+/* Buy Crypto Form Sizing */
+.wallets-balance-card,
+.wallets-list-card,
+.buy-crypto-card {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  max-width: 340px;
+  width: 100%;
+  z-index: 200;
+  padding: 24px 18px;
+  box-shadow: var(--shadow-md);
+  background: var(--surface);
+  border-radius: var(--r-xl);
+}
+
+.buy-crypto-card {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  max-width: 340px;
+  width: 100%;
+  z-index: 200;
+  padding: 24px 18px;
+  box-shadow: var(--shadow-md);
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  margin-top: 0 !important;
+}
+
+.buy-crypto-card .input-group input,
+.buy-crypto-card .input-group select {
+  width: 60%;
+  max-width: 60%;
+  margin: 0 auto;
+  display: block;
+}
+
+.buy-crypto-card .btn-primary {
+  width: 60%;
+  max-width: 60%;
+  margin: 18px auto 0 auto;
+  display: block;
+  font-size: 1rem;
+  padding: 10px 0;
+}
+
+.wallet-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+
+.wallet-currency { font-weight: 700; color: var(--accent); }
+.wallet-balance { font-family: var(--font-mono); }

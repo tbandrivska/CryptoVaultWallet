@@ -1,11 +1,7 @@
 import { db } from './db.js';
 
-export const loginUser = (email, password) => {
-  return new Promise((resolve, reject) => {
-    const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-    db.query(sql, [email, password], (err, results) => {
-      if (err) return reject(err);
-      resolve(results[0]);
-    });
-  });
+export const loginUser = async (email, password) => {
+  const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+  const [results] = await db.query(sql, [email, password]);
+  return results[0];
 };
