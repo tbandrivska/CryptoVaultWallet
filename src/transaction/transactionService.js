@@ -28,13 +28,12 @@ export const addTransaction = async (walletId, tx) => {
   await db.query(
     "INSERT INTO transactions (id, wallet_id, type, currency, amount, price, valueGBP, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
-      tx.id,
       walletId,
       tx.type,
       tx.currency,
       tx.amount,
       tx.price,
-      tx.valueGBP,
+      tx.value_gbp,
       tx.address,
       tx.status,
       tx.timestamp
@@ -66,27 +65,25 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
   await db.query("UPDATE wallets SET balance = balance - ? WHERE id = ?", [amount, walletId]);
 
   const tx = {
-    id: "0x" + Math.random().toString(16).substring(2, 10),
-    type: "send",
-    currency,
-    amount,
-    price,
-    valueGBP,
-    address,
-    status: "success",
-    timestamp: new Date().toISOString()
+      type: "send",
+      currency,
+      amount,
+      price,
+      value_gbp, 
+      address,
+      status: "success",
+      timestamp: new Date().toISOString()
   };
 
   await db.query(
     "INSERT INTO transactions (id, wallet_id, type, currency, amount, price, valueGBP, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
-      tx.id,
       walletId,
       tx.type,
       tx.currency,
       tx.amount,
       tx.price,
-      tx.valueGBP,
+      tx.value_gbp,
       tx.address,
       tx.status,
       tx.timestamp

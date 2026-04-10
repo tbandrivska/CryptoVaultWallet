@@ -27,3 +27,6 @@ CREATE TABLE transactions (
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (wallet_id) REFERENCES wallets(id)
 );
+ALTER TABLE transactions
+  ADD COLUMN price DECIMAL(18,8),
+  ADD COLUMN status VARCHAR(20);
