@@ -40,15 +40,7 @@
       </form>
     </div>
   </div>
-
-  <script>
-    function toggleOpenAccount() {
-      const checked = document.getElementById('openAccount').checked;
-      const status = document.getElementById('openAccountStatus');
-      status.textContent = checked ? "Your account is now open to receive crypto." : "Your account is private.";
-      status.style.color = checked ? "var(--success)" : "var(--text-2)";
-    }
-
+    <script>
     function changeUsername(event) {
       event.preventDefault();
       const newUsername = document.getElementById('newUsername').value.trim();
@@ -85,8 +77,16 @@
   <div id="walletsManageList"></div>
 </div>
 <script>
+async function getCurrentUserId() {
+  const res = await fetch('/api/user');
+  if (!res.ok) throw new Error('Not logged in');
+  const data = await res.json();
+  return data.user.id;
+}
+
 async function loadWalletsManage() {
-  const res = await fetch('/api/transactions/wallets/1');
+  const userId = await getCurrentUserId();
+  const res = await fetch(`/api/transactions/wallets/${userId}`);
   const wallets = await res.json();
   const list = document.getElementById('walletsManageList');
   list.innerHTML = wallets.map(w => `
@@ -120,10 +120,11 @@ document.getElementById('createWalletForm').addEventListener('submit', async fun
   const name = document.getElementById('walletName').value;
   const msg = document.getElementById('createWalletMsg');
   msg.textContent = '';
+  const userId = await getCurrentUserId();
   const res = await fetch('/api/transactions/wallets/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: 1, currency, name })
+    body: JSON.stringify({ userId, currency, name })
   });
   const data = await res.json();
   if (data.success) {

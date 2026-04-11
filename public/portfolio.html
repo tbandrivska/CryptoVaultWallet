@@ -48,9 +48,15 @@
       <div id="walletsList">Loading...</div>
     </div>
     <script>
+  async function getCurrentUserId() {
+    const res = await fetch('/api/user');
+    if (!res.ok) throw new Error('Not logged in');
+    const data = await res.json();
+    return data.user.id;
+}
     async function loadWallets() {
-      // For demo, userId=1. Replace with actual userId if needed.
-      const res = await fetch('/api/transactions/wallets/1');
+      const userId = await getCurrentUserId();
+      const res = await fetch(`/api/transactions/wallets/${userId}`);
       const wallets = await res.json();
       const list = document.getElementById('walletsList');
       if (!Array.isArray(wallets) || wallets.length === 0) {

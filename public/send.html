@@ -70,10 +70,36 @@ async function getCurrentUserId() {
   const data = await res.json();
   return data.user.id;
 }
+
+// Load user's wallets and populate the currency dropdown
+async function loadWalletsForSend() {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`/api/transactions/wallets/${userId}`);
+  const wallets = await res.json();
+  const currencySelect = document.getElementById('currency');
+  const currencies = ['BTC', 'ETH'];
+  currencySelect.innerHTML = currencies.map(cur => {
+  const wallet = wallets.find(w => w.currency === cur);
+  return wallet
+    ? `<option value="${wallet.id}" data-currency="${cur}">${cur}${wallet.name ? ' (' + wallet.name + ')' : ''}</option>`
+    : `<option value="" disabled>${cur} (no wallet)</option>`;
+}).join('');
+  if (!Array.isArray(wallets) || wallets.length === 0) {
+    currencySelect.innerHTML = '<option value="">No wallets found. Create one in Settings.</option>';
+    return;
+  }
+  currencySelect.innerHTML = wallets.map(w =>
+    `<option value="${w.id}" data-currency="${w.currency}">${w.currency}${w.name ? ' (' + w.name + ')' : ''}</option>`
+  ).join('');
+}
+document.addEventListener('DOMContentLoaded', loadWalletsForSend);
+
 async function sendCrypto() {
   const address  = document.getElementById('address').value.trim();
   const amount   = parseFloat(document.getElementById('amount').value);
-  const currency = document.getElementById('currency').value;
+  const currencySelect = document.getElementById('currency');
+  const walletId = currencySelect.value;
+  const currency = currencySelect.options[currencySelect.selectedIndex].getAttribute('data-currency');
   const strip    = document.getElementById('statusStrip');
   const msg      = document.getElementById('statusMsg');
   const spinner  = document.getElementById('spinner');
@@ -95,7 +121,7 @@ async function sendCrypto() {
     const res  = await fetch('/api/transactions/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount, address, currency })
+      body: JSON.stringify({ walletId, amount, address, currency })
     });
     const data = await res.json();
 
