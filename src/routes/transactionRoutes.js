@@ -123,6 +123,8 @@ router.post("/buy", async (req, res) => {
     res.status(500).json({ success: false, message: "Purchase failed." });
   }
 });
+import { v4 as uuidv4 } from 'uuid';
+
 router.post("/wallets/create", async (req, res) => {
   const { userId, currency, name } = req.body;
   if (!userId || !currency) {
@@ -134,9 +136,10 @@ router.post("/wallets/create", async (req, res) => {
     if (existing.length > 0) {
       return res.status(400).json({ success: false, message: "Wallet for this currency already exists." });
     }
+    const address = uuidv4();
     const [result] = await db.query(
-      "INSERT INTO wallets (user_id, currency, balance, name) VALUES (?, ?, 0, ?)",
-      [userId, currency, name || null]
+      "INSERT INTO wallets (user_id, currency, balance, name, address) VALUES (?, ?, 0, ?, ?)",
+      [userId, currency, name || null, address]
     );
     res.json({ success: true, walletId: result.insertId });
   } catch (err) {
@@ -157,6 +160,9 @@ router.put("/wallets/:walletId/rename", async (req, res) => {
 router.delete("/wallets/:walletId", async (req, res) => {
   const { walletId } = req.params;
   try {
+    // Delete all transactions for this wallet first
+    await db.query("DELETE FROM transactions WHERE wallet_id = ?", [walletId]);
+    // Now delete the wallet
     await db.query("DELETE FROM wallets WHERE id = ?", [walletId]);
     res.json({ success: true });
   } catch (err) {

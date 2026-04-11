@@ -109,3 +109,32 @@ body {
     padding: 18px 10px 14px 10px;
   }
 }
+/* Wallet management buttons */
+.wallet-row button {
+  margin-left: 8px;
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.wallet-row button {
+  background: var(--accent, #00cba8);
+  color: #fff;
+}
+
+.wallet-row button:hover {
+  background: #009e82;
+}
+
+.wallet-row button.delete-btn {
+  background: var(--danger, #ff4d6a);
+  color: #fff;
+}
+
+.wallet-row button.delete-btn:hover {
+  background: #d32f2f;
+}

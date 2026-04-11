@@ -53,6 +53,7 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
 
   const [rows] = await db.query("SELECT balance FROM wallets WHERE id = ?", [walletId]);
   const balance = rows[0]?.balance ?? 0;
+  
 
   if (amount > balance) {
     return { success: false, message: "Insufficient funds" };

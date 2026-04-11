@@ -64,6 +64,12 @@
 </div>
 
 <script>
+async function getCurrentUserId() {
+  const res = await fetch('/api/user');
+  if (!res.ok) throw new Error('Not logged in');
+  const data = await res.json();
+  return data.user.id;
+}
 async function sendCrypto() {
   const address  = document.getElementById('address').value.trim();
   const amount   = parseFloat(document.getElementById('amount').value);

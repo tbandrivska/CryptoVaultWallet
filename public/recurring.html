@@ -153,17 +153,23 @@
       msg.textContent  = 'Error connecting to server.';
     }
   }
+async function getCurrentUserId() {
+  const res = await fetch('/api/user');
+  if (!res.ok) throw new Error('Not logged in');
+  const data = await res.json();
+  return data.user.id;
+}
 
-  /* ── Load list ───────────────────────────────── */
-  async function loadRecurring() {
-    const list  = document.getElementById('paymentList');
-    const count = document.getElementById('listCount');
+/* ── Load list ───────────────────────────────── */
+async function loadRecurring() {
+  const list  = document.getElementById('paymentList');
+  const count = document.getElementById('listCount');
 
-    try {
-      const res  = await fetch('/api/transactions/recurring');
-      const data = await res.json();
+  try {
+    const res  = await fetch('/api/transactions/recurring');
+    const data = await res.json();
 
-      if (!Array.isArray(data) || data.length === 0) {
+    if (!Array.isArray(data) || data.length === 0) {
         count.textContent = '0 payments';
         list.innerHTML = `
           <div class="empty-state">

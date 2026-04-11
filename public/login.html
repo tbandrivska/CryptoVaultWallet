@@ -46,6 +46,12 @@
     err.style.cssText = 'color:#ff4d6a;font-size:0.85rem;font-weight:600;margin-top:12px;text-align:center;';
     document.querySelector('form').appendChild(err);
   }
+  async function getCurrentUserId() {
+  const res = await fetch('/api/user');
+  if (!res.ok) throw new Error('Not logged in');
+  const data = await res.json();
+  return data.user.id;
+}
 </script>
 </body>
 </body>

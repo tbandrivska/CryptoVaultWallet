@@ -27,26 +27,65 @@
 
   <div class="page-head">
     <h1>Receive <span>Crypto</span></h1>
-    <p>Share your address or QR code to receive funds</p>
+    <p>Share your address to receive funds</p>
   </div>
 
-  <div class="receive-card">
+<div class="receive-card">
+  <label for="walletSelect" class="address-label">Select Wallet</label>
+  <select id="walletSelect"></select>
 
-    <p class="address-label">Your Wallet Address</p>
-    <div class="address-box" id="address">
-      0x91bF72A9cD34Ef123456789
-    </div>
+  <p class="address-label">Your Wallet Address</p>
+  <div class="address-box" id="address">Loading address...</div>
 
-    <button class="btn btn-primary" style="margin-top:0" onclick="copyAddress()">
-      Copy Address
-    </button>
-
-    <p class="copy-confirm" id="copyMsg"></p>
-
-  </div>
+  <button class="btn btn-primary" style="margin-top:0" onclick="copyAddress()">
+    Copy Address
+  </button>
+  <p class="copy-confirm" id="copyMsg"></p>
 </div>
-
 <script>
+async function getCurrentUserId() {
+  const res = await fetch('/api/user');
+  if (!res.ok) throw new Error('Not logged in');
+  const data = await res.json();
+  return data.user.id;
+}
+
+async function loadWalletsAndAddresses() {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`/api/transactions/wallets/${userId}`);
+  const wallets = await res.json();
+  const select = document.getElementById('walletSelect');
+  const addressBox = document.getElementById('address');
+
+  if (!Array.isArray(wallets) || wallets.length === 0) {
+    select.innerHTML = '<option>No wallets found</option>';
+    addressBox.textContent = "No address found.";
+    return;
+  }
+
+  select.innerHTML = wallets.map(w =>
+    `<option value="${w.currency}">${w.name ? w.name + ' — ' : ''}${w.currency}</option>`
+  ).join('');
+
+  showAddress(userId, wallets[0].currency);
+  select.onchange = () => showAddress(userId, select.value);
+}
+
+async function showAddress(userId, currency) {
+  const addressBox = document.getElementById('address');
+  try {
+    const res = await fetch(`/api/transactions/wallets/${userId}/${currency}/address`);
+    const data = await res.json();
+    if (data.address) {
+      addressBox.textContent = data.address;
+    } else {
+      addressBox.textContent = "No address found.";
+    }
+  } catch {
+    addressBox.textContent = "No address found.";
+  }
+}
+
 function copyAddress() {
   const address = document.getElementById('address').innerText.trim();
   navigator.clipboard.writeText(address).then(() => {
@@ -55,6 +94,8 @@ function copyAddress() {
     setTimeout(() => { el.textContent = ''; }, 3000);
   });
 }
+
+document.addEventListener('DOMContentLoaded', loadWalletsAndAddresses);
 </script>
 </body>
 </html>

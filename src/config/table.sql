@@ -40,3 +40,9 @@ CREATE TABLE profiles (
   bio VARCHAR(500),
   FOREIGN KEY (username) REFERENCES users(username)
 )ALTER TABLE wallets ADD COLUMN name VARCHAR(50) DEFAULT NULL;
+ALTER TABLE transactions DROP FOREIGN KEY transactions_ibfk_1;
+ALTER TABLE transactions
+  ADD CONSTRAINT transactions_ibfk_1
+  FOREIGN KEY (wallet_id) REFERENCES wallets(id)
+  ON DELETE CASCADE;
+ALTER TABLE wallets ADD COLUMN address VARCHAR(255) DEFAULT NULL;
