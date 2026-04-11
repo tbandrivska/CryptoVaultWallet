@@ -38,7 +38,39 @@
       </form>
     </div>
   </div>
+
 <script>
+    async function loadWallets() {
+  const res = await fetch('/api/transactions/wallets/1');
+  const wallets = await res.json();
+  const list = document.getElementById('walletsList');
+  if (!Array.isArray(wallets) || wallets.length === 0) {
+    list.innerHTML = "<p>No wallets found.</p>";
+    return;
+  }
+  list.innerHTML = wallets.map(w =>
+    `<div class="wallet-row">
+      <span class="wallet-currency">${w.currency}${w.name ? ' (' + w.name + ')' : ''}</span>
+      <span class="wallet-balance">${Number(w.balance).toLocaleString(undefined, {maximumFractionDigits: 8})} ${w.currency === 'GBP' ? '£' : w.currency}</span>
+    </div>`
+  ).join('');
+}
+
+async function updateWalletValue() {
+  const res = await fetch('/api/transactions/wallets/1');
+  const wallets = await res.json();
+  const gbpWallet = wallets.find(w => w.currency === 'GBP');
+  const walletValueElem = document.getElementById('wallet-balance');
+  if (gbpWallet) {
+    walletValueElem.textContent = `£${Number(gbpWallet.balance).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+  } else {
+    walletValueElem.textContent = "£0.00";
+  }
+}
+
+// Initial load
+loadWallets();
+updateWalletValue();
 document.getElementById('topupForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const amount = parseFloat(document.getElementById('amount').value);
@@ -57,20 +89,25 @@ document.getElementById('topupForm').addEventListener('submit', async function(e
         });
         const data = await res.json();
         if (data.success) {
-            msg.textContent = "Top-up successful! New balance: £" + data.newBalance.toFixed(2);
-            msg.style.color = "var(--success)";
-            document.getElementById('amount').value = '';
-            const balanceElem = document.getElementById('wallet-balance');
-            if (balanceElem) {
-                balanceElem.textContent = "£" + data.newBalance.toFixed(2);
-            }
-        } else {
-            msg.textContent = data.message || "Top-up failed.";
-            msg.style.color = "var(--danger)";
-        }
-    } catch (err) {
-        msg.textContent = "Network error.";
-        msg.style.color = "var(--danger)";
+    let newBalance = Number(data.newBalance);
+    if (isNaN(newBalance)) newBalance = 0;
+    msg.textContent = "Top-up successful! New balance: £" + newBalance.toFixed(2);
+    msg.style.color = "var(--success)";
+    document.getElementById('amount').value = '';
+    const balanceElem = document.getElementById('wallet-balance');
+    loadWallets();
+    updateWalletValue();
+    if (balanceElem) {
+        balanceElem.textContent = "£" + newBalance.toFixed(2);
+    }
+} else {
+    msg.textContent = data.message || "Top-up failed.";
+    msg.style.color = "var(--danger)";
+    }
+} catch (err) {
+    console.error(err); // This logs the full error to the browser console
+    msg.textContent = "Network error.";
+    msg.style.color = "var(--danger)";
     }
 });
 </script>

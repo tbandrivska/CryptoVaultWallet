@@ -96,7 +96,24 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
     newBalance: balance - amount
   };
 };
-
+export const receiveCrypto = async (userId, currency, amount, fromAddress) => {
+  // Find or create wallet
+  let [wallets] = await db.query("SELECT * FROM wallets WHERE user_id = ? AND currency = ?", [userId, currency]);
+  let walletId;
+  if (wallets.length === 0) {
+    const [result] = await db.query("INSERT INTO wallets (user_id, currency, balance) VALUES (?, ?, ?)", [userId, currency, amount]);
+    walletId = result.insertId;
+  } else {
+    walletId = wallets[0].id;
+    await db.query("UPDATE wallets SET balance = balance + ? WHERE id = ?", [amount, walletId]);
+  }
+  // Record transaction
+  await db.query(
+    "INSERT INTO transactions (wallet_id, type, currency, amount, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [walletId, "receive", currency, amount, fromAddress, "success", new Date()]
+  );
+  return { success: true, walletId };
+};
 export const getTransactions = (walletId) => {
   return new Promise((resolve, reject) => {
     const sql = `
