@@ -26,7 +26,7 @@ export const addTransaction = async (walletId, tx) => {
     await updateBalance(walletId, tx.amount);
   }
   await db.query(
-    "INSERT INTO transactions (id, wallet_id, type, currency, amount, price, valueGBP, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO transactions (wallet_id, type, currency, amount, price, valueGBP, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
       walletId,
       tx.type,
@@ -77,7 +77,7 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
   };
 
   await db.query(
-    "INSERT INTO transactions (id, wallet_id, type, currency, amount, price, valueGBP, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO transactions (wallet_id, type, currency, amount, price, valueGBP, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
       walletId,
       tx.type,
