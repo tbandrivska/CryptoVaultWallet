@@ -172,5 +172,20 @@ router.delete("/wallets/:walletId", async (req, res) => {
     res.status(500).json({ success: false, message: "Could not delete wallet." });
   }
 });
+router.get("/wallets/:userId/:currency/address", async (req, res) => {
+  const { userId, currency } = req.params;
+  try {
+    const [wallets] = await db.query(
+      "SELECT address FROM wallets WHERE user_id = ? AND currency = ?",
+      [userId, currency]
+    );
+    if (!wallets.length) {
+      return res.status(404).json({ error: "Wallet not found" });
+    }
+    res.json({ address: wallets[0].address });
+  } catch (err) {
+    res.status(500).json({ error: "Could not fetch address" });
+  }
+});
 export default router;
 //router.post("/send", sendTransaction);

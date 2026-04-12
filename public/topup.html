@@ -100,6 +100,7 @@ document.getElementById('topupForm').addEventListener('submit', async function(e
       msg.textContent = "Top-up successful! New balance: £" + newBalance.toFixed(2);
       msg.style.color = "var(--success)";
       document.getElementById('amount').value = '';
+      document.getElementById('wallet-balance').textContent = "£" + newBalance.toFixed(2);
       const balanceElem = document.getElementById('wallet-balance');
       loadWallets();
       updateWalletValue();
