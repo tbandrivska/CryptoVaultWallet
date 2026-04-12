@@ -163,7 +163,6 @@ export const getTransactions = async (walletId) => {
   return rows;
 };
 
-// get the last transaction
 export const getLatestTransaction = async (walletId) => {
   const [rows] = await db.query(
     `
@@ -178,7 +177,6 @@ export const getLatestTransaction = async (walletId) => {
   return rows.length > 0 ? rows[0] : null;
 };
 
-// Get balance for a wallet
 export const getBalance = async (walletId) => {
   const [rows] = await db.query(
     `
