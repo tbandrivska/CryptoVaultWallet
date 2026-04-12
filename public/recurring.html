@@ -128,11 +128,12 @@
     msg.textContent = 'Scheduling payment…';
 
     try {
+      const userId = await getCurrentUserId();
       const res  = await fetch('/api/transactions/recurring', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address, amount, frequency })
-      });
+        body: JSON.stringify({ userId, address, amount, frequency })
+});
       const data = await res.json();
       spinner.style.display = 'none';
 

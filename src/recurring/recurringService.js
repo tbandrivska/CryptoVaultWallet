@@ -1,7 +1,8 @@
 import crypto from "crypto";
 import cron from "node-cron";
 import { getBalance, addTransaction } from "../transaction/transactionService.js";
-
+import { db } from "../config/db.js";
+import { getCurrentUserId } from "../routes/transactionRoutes.js";
 let recurringPayments = [];
 
 const VALID_FREQUENCIES = ["daily", "weekly", "monthly"];
@@ -41,8 +42,13 @@ const logRecurringTransaction = async (walletId, type, payment, status, extra = 
   });
 };
 
-export const createRecurringPayment = async (amount, address, frequency) => {
-  const walletId = 1; // prototype mock wallet
+export const createRecurringPayment = async ( userId, amount, address, frequency) => {
+  // Find the user's BTC wallet
+  const [wallets] = await db.query("SELECT id FROM wallets WHERE user_id = ? AND currency = 'BTC'", [userId]);
+  if (!wallets.length) {
+    return { success: false, message: "No BTC wallet found for user." };
+  }
+  const walletId = wallets[0].id;
   const parsedAmount = Number(amount);
   const trimmedAddress = address?.trim();
   const normalizedFrequency = frequency?.trim().toLowerCase();
@@ -59,9 +65,8 @@ export const createRecurringPayment = async (amount, address, frequency) => {
     return { success: false, message: "Invalid or missing frequency" };
   }
 
-  const balance = await getBalance(walletId);
-
   // Temporary demo fix: walletId is hardcoded, so balance may come from the wrong wallet
+  // const balance = await getBalance(walletId);
   // if (parsedAmount > balance) {
   //   return { success: false, message: "Insufficient funds" };
   // }

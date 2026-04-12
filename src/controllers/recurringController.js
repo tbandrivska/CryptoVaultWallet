@@ -5,7 +5,7 @@ import {
 } from "../recurring/recurringService.js";
 
 export const createRecurringController = async (req, res) => {
-  const { amount, address, frequency, userId } = req.body;
+  const { amount, address, frequency} = req.body;
   const userId = req.userId || req.body.userId; // or however you get the current user ID
   const result = await createRecurringPayment(userId, amount, address, frequency);
   if (result.success) {
