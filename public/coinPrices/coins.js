@@ -52,18 +52,8 @@ export async function fetchTop20CoinPrice() {
     const apiKey = 'CG-2UhE78yESRWdrAX3pU6fMsCZ';
     const API_URL = 'https://api.coingecko.com/api/v3/coins/markets';
 
-    // Fetch the user's GBP wallet balance from the backend
     let walletBalance = 0;
-    try {
-        const res = await fetch('/api/transactions/wallets/1'); // Replace 1 with actual userId if needed
-        const wallets = await res.json();
-        const gbpWallet = wallets.find(w => w.currency === 'GBP');
-        walletBalance = gbpWallet ? Number(gbpWallet.balance) : 0;
-    } catch (err) {
-        console.error("Error fetching GBP wallet:", err);
-        walletBalance = 0;
-    }
-    const coinType = 'bitcoin';
+    let data = [];
 
     try {
         const params = new URLSearchParams({
@@ -85,54 +75,68 @@ export async function fetchTop20CoinPrice() {
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-        const data = await response.json();
+        data = await response.json();
 
         // --- SORT BY PRICE (Highest to Lowest) ---
         data.sort((a, b) => b.current_price - a.current_price);
 
-        // Update Wallet Value in Header
-        const coin = data.find(c => c.id === coinType);
-
-        if (coin) {
-            const walletValue = walletBalance * coin.current_price;
-            walletVal.innerHTML = `£${walletValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        // Fetch the user's GBP wallet balance from the backend
+        try {
+            const res = await fetch('/api/transactions/wallets/1'); // Replace 1 with actual userId if needed
+            const wallets = await res.json();
+            const walletCurrencies = wallets.map(w => w.currency);
+            const walletBalances = wallets.map(w => w.balance);
+            for (let i = 0; i < walletCurrencies.length; i++) {
+                // Map currency to coin id (assuming BTC -> bitcoin, ETH -> ethereum, etc.)
+                let coinId = walletCurrencies[i].toLowerCase();
+                if (coinId === 'btc') coinId = 'bitcoin';
+                else if (coinId === 'eth') coinId = 'ethereum';
+                // Add more mappings if needed
+                let coin = data.find(c => c.id === coinId);
+                let walletAmount = Number(walletBalances[i]);
+                if (coin && walletCurrencies[i] !== 'GBP') { // Skip GBP as it's not a crypto
+                    walletBalance += walletAmount * coin.current_price;
+                }
+            }
+            walletVal.innerHTML = `£${walletBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        } catch (err) {
+            console.error("Error fetching GBP wallet:", err);
+            walletVal.innerHTML = 'Error loading wallet';
         }
 
-
         // Clear and Rebuild Sidebar
-    container.innerHTML = ''; 
+        container.innerHTML = '';
 
-    data.forEach(coin => {
-        
-        const card = document.createElement('div');
-        card.className = 'coin-card';
+        data.forEach(coin => {
 
-        
-        const changeColor = coin.price_change_percentage_24h >= 0 ? 'trend-up' : 'trend-down';
-        const symbol = coin.price_change_percentage_24h >= 0 ? '▲' : '▼';
+            const card = document.createElement('div');
+            card.className = 'coin-card';
 
-        card.innerHTML = `
-            <div class="coin-main">
-                <img src="${coin.image}" class="coin-logo" alt="${coin.name}">
-                <div class="coin-info">
-                    <span class="coin-name">${coin.name}</span>
-                    <span class="coin-price">£${coin.current_price.toLocaleString()}</span>
+            const changeColor = coin.price_change_percentage_24h >= 0 ? 'trend-up' : 'trend-down';
+            const symbol = coin.price_change_percentage_24h >= 0 ? '▲' : '▼';
+
+            card.innerHTML = `
+                <div class="coin-main">
+                    <img src="${coin.image}" class="coin-logo" alt="${coin.name}">
+                    <div class="coin-info">
+                        <span class="coin-name">${coin.name}</span>
+                        <span class="coin-price">£${coin.current_price.toLocaleString()}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="coin-trend ${changeColor}">
-                ${symbol}${Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
-            </div>
-        `;
+                <div class="coin-trend ${changeColor}">
+                    ${symbol}${Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
+                </div>
+            `;
 
-        // 3. ATTACH THE CLICK EVENT (This replaces 'onclick' in HTML)
-        card.addEventListener('click', () => {
-            console.log("Clicked:", coin.id); // For debugging
-            renderChart(coin.id); 
+            // 3. ATTACH THE CLICK EVENT (This replaces 'onclick' in HTML)
+            card.addEventListener('click', () => {
+                console.log("Clicked:", coin.id); // For debugging
+                renderChart(coin.id);
+            });
+
+            // 4. Put the card into the sidebar
+            container.appendChild(card);
         });
-
-        // 4. Put the card into the sidebar
-        container.appendChild(card);
-    });
 
     } catch (err) {
         console.error("Error:", err);
