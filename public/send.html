@@ -130,7 +130,7 @@ async function sendCrypto() {
 
     if (res.ok && data.success) {
       strip.className = 'status-strip show success';
-      msg.textContent = `✓ Sent ${amount} ${currency}${data.valueGBP ? ` · £${data.valueGBP}` : ''}. TxID: ${data.txId || data.id || 'N/A'}`;
+      msg.textContent = `✓ Sent ${amount} ${currency}${data.value_gbp ? ` · £${data.value_gbp}` : ''}. TxID: ${data.txId || data.id || 'N/A'}`;
       document.getElementById('address').value = '';
       document.getElementById('amount').value  = '';
     } else {

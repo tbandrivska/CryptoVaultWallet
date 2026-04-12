@@ -33,10 +33,10 @@ const logRecurringTransaction = async (walletId, type, payment, status, extra = 
     currency: "BTC",
     amount: payment.amount,
     price: 0,
-    valueGBP: 0,
+    value_gbp: 0,
     address: payment.address,
     status,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toISOString().slice(0, 19).replace('T', ' '),
     ...extra
   });
 };

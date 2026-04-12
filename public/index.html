@@ -120,7 +120,7 @@
                   txSub.innerText = `${tx.amount} ${tx.currency} to ${tx.address.substring(0, 6)}...`;
                   
                   // 3. Update the Amount (with the toFixed safety)
-                  const displayValue = tx.value_gbp || tx.valueGBP || 0;
+                  const displayValue = tx.value_gbp || tx.value_gbp || 0;
                   txAmount.innerText = `£${Number(displayValue).toFixed(2)}`;
                   txAmount.className = "tx-amount badge badge-success"; 
               }

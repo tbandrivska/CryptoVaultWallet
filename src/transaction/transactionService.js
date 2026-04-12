@@ -26,7 +26,7 @@ export const addTransaction = async (walletId, tx) => {
     await updateBalance(walletId, tx.amount);
   }
   await db.query(
-    "INSERT INTO transactions (wallet_id, type, currency, amount, price, valueGBP, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO transactions (wallet_id, type, currency, amount, price, value_gbp, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
       walletId,
       tx.type,
@@ -53,31 +53,39 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
 
   const [rows] = await db.query("SELECT balance FROM wallets WHERE id = ?", [walletId]);
   const balance = rows[0]?.balance ?? 0;
-  
 
   if (amount > balance) {
     return { success: false, message: "Insufficient funds" };
   }
 
-  const price = await fetchCoinPrice(currency);
+  // Map currency to CoinGecko ID
+  let coinId = currency;
+  if (currency === "BTC") coinId = "bitcoin";
+  else if (currency === "ETH") coinId = "ethereum";
 
-  const valueGBP = amount * price.price; // I changed the fethcCoinPrice function so now it works with this.
+  const priceObj = await fetchCoinPrice(coinId);
+
+  if (!priceObj || !priceObj.price) {
+    return { success: false, message: "Could not fetch price." };
+  }
+
+  const value_gbp = amount * priceObj.price;
 
   await db.query("UPDATE wallets SET balance = balance - ? WHERE id = ?", [amount, walletId]);
 
   const tx = {
-      type: "send",
-      currency,
-      amount,
-      price,
-      value_gbp, 
-      address,
-      status: "success",
-      timestamp: new Date().toISOString()
+    type: "send",
+    currency,
+    amount,
+    price: priceObj.price,
+    value_gbp,
+    address,
+    status: "success",
+    timestamp: new Date().toISOString().slice(0, 19).replace('T', ' ')
   };
 
   await db.query(
-    "INSERT INTO transactions (wallet_id, type, currency, amount, price, valueGBP, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO transactions (wallet_id, type, currency, amount, price, value_gbp, address, status, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
       walletId,
       tx.type,
