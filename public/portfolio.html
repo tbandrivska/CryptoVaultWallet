@@ -131,10 +131,12 @@ document.getElementById('buyForm').addEventListener('submit', async function(e) 
     msg.style.color = "var(--danger)";
     return;
   }
+  //get the real userId
+  const userId = await getCurrentUserId();
   const res = await fetch('/api/transactions/buy', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: 1, currency, amount })
+    body: JSON.stringify({ userId, currency, amount })
   });
   const data = await res.json();
   if (data.success) {

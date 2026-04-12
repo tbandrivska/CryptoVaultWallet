@@ -26,9 +26,12 @@
     <div class="page-head">
       <h1>Top Up <span>GBP</span></h1>
       <p>Add funds to your CryptoVault account (mock only)</p>
+      <div>
+        <strong>Your GBP Balance: <span id="wallet-balance">£0.00</span></strong>
+      </div>
     </div>
     <div class="topup-card">
-      <form id="topupForm">
+      <form id="topupForm" autocomplete="off">
         <div class="input-group">
           <label for="amount">Amount (GBP)</label>
           <input type="number" id="amount" min="1" step="1" placeholder="Enter amount" required>
@@ -38,10 +41,17 @@
       </form>
     </div>
   </div>
-
 <script>
-    async function loadWallets() {
-  const res = await fetch('/api/transactions/wallets/1');
+  async function getCurrentUserId() {
+    const res = await fetch('/api/user');
+    if (!res.ok) throw new Error('Not logged in');
+    const data = await res.json();
+    return data.user.id;
+  }
+
+  async function loadWallets() {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`/api/transactions/wallets/${userId}`);
   const wallets = await res.json();
   const list = document.getElementById('walletsList');
   if (!Array.isArray(wallets) || wallets.length === 0) {
@@ -72,42 +82,40 @@ async function updateWalletValue() {
 loadWallets();
 updateWalletValue();
 document.getElementById('topupForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const amount = parseFloat(document.getElementById('amount').value);
-    const msg = document.getElementById('topupMsg');
-    msg.textContent = '';
-    if (isNaN(amount) || amount <= 0) {
-        msg.textContent = "Enter a valid amount.";
-        msg.style.color = "var(--danger)";
-        return;
-    }
-    try {
-        const res = await fetch('/api/transactions/topup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: 1, amount })
-        });
-        const data = await res.json();
-        if (data.success) {
-    let newBalance = Number(data.newBalance);
-    if (isNaN(newBalance)) newBalance = 0;
-    msg.textContent = "Top-up successful! New balance: £" + newBalance.toFixed(2);
-    msg.style.color = "var(--success)";
-    document.getElementById('amount').value = '';
-    const balanceElem = document.getElementById('wallet-balance');
-    loadWallets();
-    updateWalletValue();
-    if (balanceElem) {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById('amount').value);
+  const msg = document.getElementById('topupMsg');
+  msg.textContent = '';
+  try {
+    const userId = await getCurrentUserId(); // <-- get userId
+    const res = await fetch('/api/transactions/topup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, amount }) // <-- send userId
+    });
+    const data = await res.json();
+    if (data.success) {
+      let newBalance = Number(data.newBalance);
+      if (isNaN(newBalance)) newBalance = 0;
+      msg.textContent = "Top-up successful! New balance: £" + newBalance.toFixed(2);
+      msg.style.color = "var(--success)";
+      document.getElementById('amount').value = '';
+      const balanceElem = document.getElementById('wallet-balance');
+      loadWallets();
+      updateWalletValue();
+      if (balanceElem) {
         balanceElem.textContent = "£" + newBalance.toFixed(2);
+      }
+    } else {
+      msg.textContent = data.message || "Top-up failed.";
+      msg.style.color = "var(--danger)";
     }
-} else {
-    msg.textContent = data.message || "Top-up failed.";
-    msg.style.color = "var(--danger)";
-    }
-} catch (err) {
+  } catch (err) {
     console.error(err); // This logs the full error to the browser console
     msg.textContent = "Network error.";
     msg.style.color = "var(--danger)";
-    }
+  }
 });
+
+
 </script>

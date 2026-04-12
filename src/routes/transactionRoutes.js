@@ -35,8 +35,11 @@ router.post("/recurring", createRecurringController);
 router.get("/recurring", getRecurringController);
 router.get("/history/:walletId", getTransactionHistory);
 router.delete("/recurring/:id", cancelRecurringController);
+export const getCurrentUserId = (req) => {
+  return req.userId; 
+};
 router.post("/topup", async (req, res) => {
-  const { userId, amount } = req.body;
+  const { userId, amount } = req.body; //get userId from body
   if (!userId || !amount || amount <= 0) {
     return res.status(400).json({ success: false, message: "Invalid input." });
   }
