@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CryptoVault — Top Up</title>
+  <title>CryptoVault — GBP Balance</title>
   <link rel="stylesheet" href="/shared.css">
   <link rel="stylesheet" href="/topup.css">
 </head>
@@ -11,7 +11,7 @@
   <nav class="top-nav">
     <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
     <a href="/index.html">Home</a>
-    <a href="/topup.html" class="active">Top Up</a>
+    <a href="/topup.html" class="active">GBP Balance</a>
     <a href="/portfolio.html">Portfolio</a>
     <a href="/send.html">Send</a>
     <a href="/receive.html">Receive</a>
@@ -24,7 +24,7 @@
 
   <div class="page-wrap">
     <div class="page-head">
-      <h1>Top Up <span>GBP</span></h1>
+      <h1>GBP Balance <span>  Top Up</span></h1>
       <p>Add funds to your CryptoVault account (mock only)</p>
       <div>
         <strong>Your GBP Balance: <span id="wallet-balance">£0.00</span></strong>
@@ -36,7 +36,7 @@
           <label for="amount">Amount (GBP)</label>
           <input type="number" id="amount" min="1" step="1" placeholder="Enter amount" required>
         </div>
-        <button type="submit" class="btn btn-primary">Top Up</button>
+        <button type="submit" class="btn btn-primary">GBP Balance</button>
         <div id="topupMsg" class="status-text"></div>
       </form>
     </div>
@@ -67,7 +67,8 @@
 }
 
 async function updateWalletValue() {
-  const res = await fetch('/api/transactions/wallets/1');
+  const userId = await getCurrentUserId();
+  const res = await fetch(`/api/transactions/wallets/${userId}`);
   const wallets = await res.json();
   const gbpWallet = wallets.find(w => w.currency === 'GBP');
   const walletValueElem = document.getElementById('wallet-balance');
@@ -77,7 +78,6 @@ async function updateWalletValue() {
     walletValueElem.textContent = "£0.00";
   }
 }
-
 // Initial load
 loadWallets();
 updateWalletValue();
