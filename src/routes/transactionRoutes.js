@@ -98,8 +98,8 @@ router.post("/buy", async (req, res) => {
     let [cryptoRows] = await db.query("SELECT * FROM wallets WHERE user_id = ? AND currency = ?", [userId, currency]);
     let cryptoWalletId;
     if (cryptoRows.length === 0) {
-      const result = await db.query("INSERT INTO wallets (user_id, currency, balance) VALUES (?, ?, ?)", [userId, currency, cryptoAmount]);
-      cryptoWalletId = result[0].insertId;
+      const address = uuidv4();
+await db.query("INSERT INTO wallets (user_id, currency, balance, address) VALUES (?, ?, ?, ?)", [userId, currency, cryptoAmount, address]);
     } else {
       cryptoWalletId = cryptoRows[0].id;
       await db.query("UPDATE wallets SET balance = balance + ? WHERE id = ?", [cryptoAmount, cryptoWalletId]);
@@ -135,7 +135,7 @@ router.post("/wallets/create", async (req, res) => {
   }
   try {
     // Prevent duplicate wallet for same currency
-    const [existing] = await db.query("SELECT * FROM wallets WHERE user_id = ? AND currency = ?", [userId, currency]);
+    const [existing] = await db.query("SELECT * FROM wallets WHERE user_id = ? AND currency = ?", [userId, currency, address]);
     if (existing.length > 0) {
       return res.status(400).json({ success: false, message: "Wallet for this currency already exists." });
     }

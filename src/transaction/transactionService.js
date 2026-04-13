@@ -125,10 +125,11 @@ export const receiveCrypto = async (userId, currency, amount, fromAddress) => {
   let walletId;
 
   if (wallets.length === 0) {
+    const address = uuidv4();
     const [result] = await db.query(
-      "INSERT INTO wallets (user_id, currency, balance) VALUES (?, ?, ?)",
-      [userId, currency, amount]
-    );
+  "INSERT INTO wallets (user_id, currency, balance, address) VALUES (?, ?, ?, ?)",
+  [userId, currency, amount, address]
+);
     walletId = result.insertId;
   } else {
     walletId = wallets[0].id;

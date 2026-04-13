@@ -11,6 +11,9 @@ export const createWallet = (userId, currency) => {
     });
     // Generate a unique address (for demo, use UUID)
     const address = uuidv4();
-    await db.query("INSERT INTO wallets (user_id, currency, balance, address) VALUES (?, ?, ?, ?)", [userId, currency, 0, address]);
+    await db.query(
+  "INSERT INTO wallets (user_id, currency, balance, name, address) VALUES (?, ?, 0, ?, ?)",
+  [userId, currency, name || null, address]
+);
   });
 };
