@@ -70,13 +70,15 @@
       <!-- Recent Activity -->
       <section id="lastTransaction" class="card">
         <div class="field-label">Recent Activity</div>
-        <div class="transaction-item">
-          <div class="tx-icon">↓</div>
-          <div class="tx-info">
-            <p>Last Transaction</p>
-            <span class="text-3">—</span>
+        <div id="recentActivityContent">
+          <div class="transaction-item">
+            <div class="tx-icon">↓</div>
+            <div class="tx-info">
+              <p>Last Transaction</p>
+              <span class="text-3">Loading…</span>
+            </div>
+            <div class="tx-amount badge badge-muted">—</div>
           </div>
-          <div class="tx-amount badge badge-muted">—</div>
         </div>
       </section>
 
@@ -140,35 +142,86 @@
         changeEl.innerText = `${pos ? '▲' : '▼'} ${Math.abs(coinData.change24h).toFixed(2)}%`;
       }
     }
-    async function updateRecentActivity() {
-      try {
-        const res = await fetch('/api/transactions/latest?walletId=1');
-        if (!res.ok) return;
-        const tx = await res.json();
-        if (tx) {
-          const txIcon = document.querySelector('#lastTransaction .tx-icon');
-          const txInfo = document.querySelector('#lastTransaction .tx-info p');
-          const txSub  = document.querySelector('#lastTransaction .text-3');
-          const txAmt  = document.querySelector('#lastTransaction .tx-amount');
-          if (tx.type === 'send') txIcon.innerText = '↑';
-          else if (tx.type === 'receive') txIcon.innerText = '↓';
-          else txIcon.innerText = '£';
-          txInfo.innerText = `Recent ${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}`;
-          txSub.innerText  = `${tx.amount} ${tx.currency} · ${(tx.address||'').substring(0,8)}…`;
-          txAmt.innerText  = tx.value_gbp ? `£${Number(tx.value_gbp).toFixed(2)}` : '—';
-          txAmt.className  = 'tx-amount badge badge-success';
-        }
-      } catch {}
-    }
-    updateRecentActivity();
   </script>
 
   <script>
-    // Returns userId or null if not logged in (never throws)
     async function getCurrentUserId() {
       const res = await fetch('/api/user');
       if (!res.ok) return null;
       return (await res.json()).user.id;
+    }
+
+    async function updateRecentActivity() {
+      const container = document.getElementById('recentActivityContent');
+      try {
+        const userId = await getCurrentUserId();
+        if (!userId) {
+          container.innerHTML = `<div class="transaction-item">
+            <div class="tx-icon">—</div>
+            <div class="tx-info"><p>Not logged in</p><span class="text-3">Please sign in</span></div>
+          </div>`;
+          return;
+        }
+
+        // Get this user's wallets
+        const walletsRes = await fetch(`/api/transactions/wallets/${userId}`);
+        const wallets = await walletsRes.json();
+
+        if (!Array.isArray(wallets) || wallets.length === 0) {
+          container.innerHTML = `<div class="transaction-item">
+            <div class="tx-icon">—</div>
+            <div class="tx-info"><p>No wallets yet</p><span class="text-3">Create a wallet below</span></div>
+          </div>`;
+          return;
+        }
+
+        // Fetch latest tx from all wallets in parallel, pick the most recent
+        const results = await Promise.all(
+          wallets.map(w =>
+            fetch(`/api/transactions/latest?walletId=${w.id}`)
+              .then(r => r.ok ? r.json() : null)
+              .catch(() => null)
+          )
+        );
+
+        const latest = results
+          .filter(tx => tx && tx.timestamp)
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+
+        if (!latest) {
+          container.innerHTML = `<div class="transaction-item">
+            <div class="tx-icon">—</div>
+            <div class="tx-info"><p>No transactions yet</p><span class="text-3">Activity will appear here</span></div>
+          </div>`;
+          return;
+        }
+
+        const iconMap = { send: '↑', receive: '↓', buy: '₿' };
+        const icon = iconMap[latest.type] || '£';
+        const label = latest.type
+          ? latest.type.charAt(0).toUpperCase() + latest.type.slice(1)
+          : 'Transaction';
+        const sub = `${latest.amount} ${latest.currency}` +
+          (latest.address ? ` · ${latest.address.substring(0, 8)}…` : '');
+        const amt = latest.value_gbp
+          ? `£${Number(latest.value_gbp).toFixed(2)}`
+          : `${latest.amount} ${latest.currency}`;
+
+        container.innerHTML = `<div class="transaction-item">
+          <div class="tx-icon">${icon}</div>
+          <div class="tx-info">
+            <p>Recent ${label}</p>
+            <span class="text-3">${sub}</span>
+          </div>
+          <div class="tx-amount badge badge-success">${amt}</div>
+        </div>`;
+
+      } catch (err) {
+        container.innerHTML = `<div class="transaction-item">
+          <div class="tx-icon">—</div>
+          <div class="tx-info"><p>Could not load activity</p><span class="text-3">Check your connection</span></div>
+        </div>`;
+      }
     }
 
     async function loadGbpBalance() {
@@ -184,7 +237,6 @@
           gbp ? `£${Number(gbp.balance).toLocaleString(undefined,{minimumFractionDigits:2})}` : '£0.00';
       } catch {}
     }
-    loadGbpBalance();
 
     async function doTopup() {
       const amount   = parseFloat(document.getElementById('topupAmount').value);
@@ -275,7 +327,6 @@
           </div>`).join('');
       } catch { list.innerHTML = '<p style="color:var(--danger);font-size:0.85rem;">Could not load wallets.</p>'; }
     }
-    loadManageWallets();
 
     window.renameWallet = async function(walletId) {
       const input = document.getElementById('rename-' + walletId);
@@ -297,6 +348,11 @@
       statusEl.textContent = res.ok ? '✓ Wallet deleted.' : (data.message || 'Could not delete wallet.');
       loadManageWallets();
     };
+
+    // Init
+    updateRecentActivity();
+    loadGbpBalance();
+    loadManageWallets();
   </script>
 </body>
 </html>
