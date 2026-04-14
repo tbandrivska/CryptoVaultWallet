@@ -12,11 +12,9 @@
 <nav class="top-nav">
   <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
   <a href="/index.html">Home</a>
-  <a href="topup.html">GBP Balance</a>
   <a href="/portfolio.html">Portfolio</a>
   <a href="/send.html">Send</a>
   <a href="/receive.html">Receive</a>
-  <a href="/recurring.html">Recurring</a>
   <a href="/history.html" class="active">History</a>
   <a href="/publicprofile.html">Public Profile</a>
   <a href="/settings.html">Settings</a>
@@ -33,7 +31,6 @@
     <button class="refresh-btn" onclick="loadHistory()">↻ Refresh</button>
   </div>
 
-  <!-- Summary stats -->
   <div class="stats-row">
     <div class="stat-card">
       <p class="stat-label">Total Transactions</p>
@@ -49,7 +46,6 @@
     </div>
   </div>
 
-  <!-- Table -->
   <div class="history-card">
     <div class="t-head">
       <span class="t-h">Type</span>
@@ -70,12 +66,9 @@
 </div>
 
 <script>
-  const WALLET_ID = 1;
-
   function formatDate(ts) {
     if (!ts) return '—';
-    const d = new Date(ts);
-    return d.toLocaleString('en-GB', {
+    return new Date(ts).toLocaleString('en-GB', {
       day: '2-digit', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit'
     });
@@ -83,17 +76,22 @@
 
   function shortAddress(addr) {
     if (!addr) return '—';
-    if (addr.length <= 20) return addr;
-    return addr.slice(0, 10) + '…' + addr.slice(-8);
+    return addr.length <= 20 ? addr : addr.slice(0, 10) + '…' + addr.slice(-8);
   }
 
   function typeClass(type) {
     if (!type) return 'type-unknown';
     const t = type.toLowerCase().replace(/[\s_]/g, '-');
-    if (t === 'send') return 'type-send';
+    if (t === 'send')    return 'type-send';
     if (t === 'receive') return 'type-receive';
     if (t.startsWith('recurring')) return 'type-' + t;
     return 'type-unknown';
+  }
+
+  async function getCurrentUserId() {
+    const res = await fetch('/api/user');
+    if (!res.ok) return null;
+    return (await res.json()).user.id;
   }
 
   async function loadHistory() {
@@ -102,67 +100,69 @@
     const stSent  = document.getElementById('statSent');
     const stRecv  = document.getElementById('statReceived');
 
-    body.innerHTML = `
-      <div class="empty-state">
-        <p class="empty-sub">Loading transactions…</p>
-      </div>`;
+    body.innerHTML = `<div class="empty-state"><p class="empty-sub">Loading transactions…</p></div>`;
 
     try {
-      const res  = await fetch('/api/transactions/history/' + WALLET_ID);
-      const data = await res.json();
-
-      if (!Array.isArray(data) || data.length === 0) {
-        stTotal.textContent = '0';
-        stSent.textContent  = '0';
-        stRecv.textContent  = '0';
-        body.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">📋</div>
-            <p class="empty-title">No transactions yet</p>
-            <p class="empty-sub">Your wallet activity will appear here.</p>
-          </div>`;
+      // Get current user's wallets
+      const userId = await getCurrentUserId();
+      if (!userId) {
+        body.innerHTML = `<div class="empty-state"><p class="empty-sub">Please log in to view your history.</p></div>`;
         return;
       }
 
-      /* Stats */
-      const sends    = data.filter(t => t.type === 'send').length;
-      const receives = data.filter(t => t.type === 'receive').length;
+      const wallets = await (await fetch(`/api/transactions/wallets/${userId}`)).json();
+      if (!Array.isArray(wallets) || wallets.length === 0) {
+        stTotal.textContent = '0'; stSent.textContent = '0'; stRecv.textContent = '0';
+        body.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div>
+          <p class="empty-title">No wallets found</p>
+          <p class="empty-sub">Create a wallet on the Home page to get started.</p></div>`;
+        return;
+      }
 
-      stTotal.textContent = data.length;
-      stSent.textContent  = sends;
-      stRecv.textContent  = receives;
+      // Fetch transactions for ALL wallets in parallel
+      const results = await Promise.all(
+        wallets.map(w => fetch(`/api/transactions/history/${w.id}`).then(r => r.json()))
+      );
 
-      /* Rows */
+      // Flatten and sort newest first
+      const allTx = results
+        .flat()
+        .filter(tx => tx && tx.timestamp)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      if (allTx.length === 0) {
+        stTotal.textContent = '0'; stSent.textContent = '0'; stRecv.textContent = '0';
+        body.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div>
+          <p class="empty-title">No transactions yet</p>
+          <p class="empty-sub">Your wallet activity will appear here.</p></div>`;
+        return;
+      }
+
+      stTotal.textContent = allTx.length;
+      stSent.textContent  = allTx.filter(t => t.type === 'send').length;
+      stRecv.textContent  = allTx.filter(t => t.type === 'receive').length;
+
       body.innerHTML = '';
-      data.forEach(tx => {
+      allTx.forEach(tx => {
         const row = document.createElement('div');
         row.className = 't-row';
-
-        const amount = tx.amount != null
-          ? `${tx.amount} ${tx.currency || ''}`.trim()
-          : '—';
-        const gbp = tx.value_gbp != null
+        const amount = tx.amount != null ? `${tx.amount} ${tx.currency || ''}`.trim() : '—';
+        const gbp    = tx.value_gbp != null
           ? `£${parseFloat(tx.value_gbp).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
           : '—';
-
         row.innerHTML = `
-          <div class="t-type">
-            <span class="type-badge ${typeClass(tx.type)}">${tx.type || '—'}</span>
-          </div>
+          <div class="t-type"><span class="type-badge ${typeClass(tx.type)}">${tx.type || '—'}</span></div>
           <div class="t-address" title="${tx.address || ''}">${shortAddress(tx.address)}</div>
           <div class="t-amount">${amount}</div>
           <div class="t-gbp">${gbp}</div>
-          <div class="t-date">${formatDate(tx.timestamp)}</div>
-        `;
-
+          <div class="t-date">${formatDate(tx.timestamp)}</div>`;
         body.appendChild(row);
       });
 
-    } catch {
-      body.innerHTML = `
-        <div class="empty-state">
-          <p class="empty-sub" style="color:var(--danger)">Error loading transactions. Check your connection.</p>
-        </div>`;
+    } catch (err) {
+      body.innerHTML = `<div class="empty-state">
+        <p class="empty-sub" style="color:var(--danger)">Error loading transactions. Check your connection.</p>
+      </div>`;
     }
   }
 

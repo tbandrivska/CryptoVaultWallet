@@ -5,145 +5,491 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CryptoVault — Send</title>
   <link rel="stylesheet" href="/shared.css">
-  <link rel="stylesheet" href="/send.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 96px 24px 60px;
+    }
+    .page-wrap {
+      width: 100%;
+      max-width: 520px;
+      animation: fadeUp 0.42s var(--ease) both;
+    }
+    .page-head { margin-bottom: 24px; }
+    .page-head h1 {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      line-height: 1.15;
+    }
+    .page-head h1 span { color: var(--accent); }
+    .page-head p { color: var(--text-2); font-size: 0.875rem; margin-top: 7px; }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 5px;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+    .tab-btn {
+      padding: 9px 20px;
+      border: none;
+      border-radius: var(--r-lg);
+      background: transparent;
+      color: var(--text-2);
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: all var(--t-base) var(--ease);
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: var(--text-inv);
+      box-shadow: 0 4px 14px rgba(0,203,168,0.25);
+    }
+    .tab-btn:not(.active):hover {
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+
+    /* ── Send card ── */
+    .send-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-2xl);
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    .send-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-2) 30%, var(--border-3) 50%, var(--border-2) 70%, transparent);
+    }
+    .amount-row {
+      display: grid;
+      grid-template-columns: 1fr 140px;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .amount-row .field { margin-top: 0; }
+
+    /* ── Recurring panel — wider, two columns ── */
+    #panel-recurring {
+      width: 100%;
+      max-width: 860px;
+    }
+    .rec-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 680px) { .rec-grid { grid-template-columns: 1fr; } }
+
+    .rec-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-2xl);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      position: relative;
+    }
+    .rec-panel::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-2) 30%, var(--border-3) 50%, var(--border-2) 70%, transparent);
+    }
+    .rec-panel-head {
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .rec-panel-icon {
+      width: 26px; height: 26px;
+      background: var(--accent-bg);
+      border: 1px solid rgba(0,203,168,0.22);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; flex-shrink: 0;
+    }
+    .rec-panel-body { padding: 20px 24px 24px; }
+    .rec-form-field { display: flex; flex-direction: column; gap: 7px; }
+    .rec-form-field + .rec-form-field { margin-top: 15px; }
+    .rec-form-field label {
+      font-size: 0.695rem; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--text-2);
+    }
+    .list-controls {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 12px; margin-bottom: 12px;
+    }
+    .list-count { font-size: 0.78rem; color: var(--text-2); font-weight: 600; }
+    .refresh-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 13px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--r-md); color: var(--text-2);
+      font-family: var(--font-body); font-size: 0.77rem; font-weight: 700;
+      cursor: pointer; transition: all var(--t-base) var(--ease);
+    }
+    .refresh-btn:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+    .payment-list { display: flex; flex-direction: column; gap: 8px; }
+    .payment-item {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 14px 16px;
+      transition: border-color var(--t-base) var(--ease);
+    }
+    .payment-item:hover { border-color: var(--border-2); }
+    .payment-item.is-cancelled { opacity: 0.4; pointer-events: none; }
+    .pi-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .pi-amount { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--accent); }
+    .pi-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-bottom: 10px; }
+    .pi-meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .pi-meta-label { font-size: 0.61rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); }
+    .pi-meta-value { font-size: 0.77rem; color: var(--text-2); font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pi-actions { padding-top: 10px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+    .empty-state { text-align: center; padding: 40px 20px; }
+    .empty-icon { font-size: 1.6rem; opacity: 0.2; margin-bottom: 10px; }
+    .empty-text { font-size: 0.875rem; color: var(--text-2); line-height: 1.6; }
+    .create-status {
+      display: none; align-items: center; gap: 10px;
+      padding: 11px 14px; border-radius: var(--r-md);
+      font-size: 0.82rem; font-weight: 600; margin-top: 12px;
+    }
+    .create-status.show { display: flex; }
+    .create-status.info    { background: var(--surface-2);  color: var(--text-2);  border: 1px solid var(--border); }
+    .create-status.success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-bd); }
+    .create-status.error   { background: var(--danger-bg);  color: var(--danger);  border: 1px solid var(--danger-bd); }
+  </style>
 </head>
 <body>
 
 <nav class="top-nav">
   <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
   <a href="/index.html">Home</a>
-  <a href="topup.html">GBP Balance</a>
   <a href="/portfolio.html">Portfolio</a>
   <a href="/send.html" class="active">Send</a>
   <a href="/receive.html">Receive</a>
-  <a href="/recurring.html">Recurring</a>
   <a href="/history.html">History</a>
   <a href="/publicprofile.html">Public Profile</a>
   <a href="/settings.html">Settings</a>
   <a href="/logout">Logout</a>
 </nav>
 
-<div class="page-wrap">
+<div class="page-wrap" id="page-wrap">
 
   <div class="page-head">
     <h1>Send <span>Crypto</span></h1>
-    <p>Transfer funds to any wallet address</p>
+    <p>Transfer funds instantly or schedule recurring payments</p>
   </div>
 
-  <div class="send-card">
-
-    <div class="field">
-      <label class="field-label" for="address">Recipient Address</label>
-      <input type="text" id="address" placeholder="0x... or bc1...">
-    </div>
-
-    <div class="amount-row">
-      <div class="field">
-        <label class="field-label" for="amount">Amount</label>
-        <input type="number" id="amount" placeholder="0.00000000" step="any" min="0">
-      </div>
-      <div class="field">
-        <label class="field-label" for="currency">Currency</label>
-        <select id="currency">
-          <option value="BTC">₿ BTC</option>
-          <option value="ETH">Ξ ETH</option>
-        </select>
-      </div>
-    </div>
-
-    <button class="btn btn-primary" id="sendBtn" onclick="sendCrypto()">
-      Send Transaction →
-    </button>
-
-    <div class="status-strip" id="statusStrip">
-      <span class="spinner" id="spinner" style="display:none"></span>
-      <span id="statusMsg"></span>
-    </div>
-
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-send-btn"      onclick="showTab('send')">Send Now</button>
+    <button class="tab-btn"        id="tab-recurring-btn" onclick="showTab('recurring')">Recurring Payments</button>
   </div>
-</div>
+
+  <!-- Send Now -->
+  <div id="panel-send">
+    <div class="send-card">
+
+      <div class="field">
+        <label class="field-label" for="address">Recipient Address</label>
+        <input type="text" id="address" placeholder="0x… or bc1…">
+      </div>
+
+      <div class="amount-row">
+        <div class="field">
+          <label class="field-label" for="amount">Amount</label>
+          <input type="number" id="amount" placeholder="0.00000000" step="any" min="0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="currency">Currency</label>
+          <select id="currency">
+            <option value="BTC">₿ BTC</option>
+            <option value="ETH">Ξ ETH</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="sendBtn" onclick="sendCrypto()">
+        Send Transaction →
+      </button>
+
+      <div class="status-strip" id="statusStrip">
+        <span class="spinner" id="spinner" style="display:none"></span>
+        <span id="statusMsg"></span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Recurring Payments (hidden by default) -->
+  <div id="panel-recurring" style="display:none;">
+    <div class="rec-grid">
+
+      <!-- Create form -->
+      <div class="rec-panel">
+        <div class="rec-panel-head">
+          <span class="rec-panel-icon">⟳</span>
+          New Recurring Payment
+        </div>
+        <div class="rec-panel-body">
+          <div class="rec-form-field">
+            <label for="rec-address">Recipient Address</label>
+            <input id="rec-address" type="text" placeholder="0x… or bc1…">
+          </div>
+          <div class="rec-form-field">
+            <label for="rec-amount">Amount (BTC)</label>
+            <input id="rec-amount" type="number" placeholder="0.00000000" min="0.0001" step="any">
+          </div>
+          <div class="rec-form-field">
+            <label for="rec-frequency">Frequency</label>
+            <select id="rec-frequency">
+              <option value="">Select a frequency…</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="createRecurring()">
+            Schedule Payment →
+          </button>
+          <div class="create-status" id="createStatus">
+            <span class="spinner" id="createSpinner" style="display:none"></span>
+            <span id="createMsg"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- List -->
+      <div class="rec-panel">
+        <div class="rec-panel-head">
+          <span class="rec-panel-icon">📋</span>
+          Scheduled Payments
+        </div>
+        <div class="rec-panel-body">
+          <div class="list-controls">
+            <span class="list-count" id="listCount">Loading…</span>
+            <button class="refresh-btn" onclick="loadRecurring()">↻ Refresh</button>
+          </div>
+          <div class="payment-list" id="paymentList">
+            <div class="empty-state">
+              <div class="empty-icon">🔁</div>
+              <p class="empty-text">No recurring payments yet.<br>Create one on the left.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /.page-wrap -->
 
 <script>
-async function getCurrentUserId() {
-  const res = await fetch('/api/user');
-  if (!res.ok) throw new Error('Not logged in');
-  const data = await res.json();
-  return data.user.id;
-}
-
-// Load user's wallets and populate the currency dropdown
-async function loadWalletsForSend() {
-  const userId = await getCurrentUserId();
-  const res = await fetch(`/api/transactions/wallets/${userId}`);
-  const wallets = await res.json();
-  const currencySelect = document.getElementById('currency');
-  const currencies = ['BTC', 'ETH'];
-  currencySelect.innerHTML = currencies.map(cur => {
-  const wallet = wallets.find(w => w.currency === cur);
-  return wallet
-    ? `<option value="${wallet.id}" data-currency="${cur}">${cur}${wallet.name ? ' (' + wallet.name + ')' : ''}</option>`
-    : `<option value="" disabled>${cur} (no wallet)</option>`;
-}).join('');
-  if (!Array.isArray(wallets) || wallets.length === 0) {
-    currencySelect.innerHTML = '<option value="">No wallets found. Create one in Settings.</option>';
-    return;
-  }
-  currencySelect.innerHTML = wallets.map(w =>
-    `<option value="${w.id}" data-currency="${w.currency}">${w.currency}${w.name ? ' (' + w.name + ')' : ''}</option>`
-  ).join('');
-}
-document.addEventListener('DOMContentLoaded', loadWalletsForSend);
-
-async function sendCrypto() {
-  const address  = document.getElementById('address').value.trim();
-  const amount   = parseFloat(document.getElementById('amount').value);
-  const currencySelect = document.getElementById('currency');
-  const walletId = currencySelect.value;
-  const currency = currencySelect.options[currencySelect.selectedIndex].getAttribute('data-currency');
-  const strip    = document.getElementById('statusStrip');
-  const msg      = document.getElementById('statusMsg');
-  const spinner  = document.getElementById('spinner');
-  const btn      = document.getElementById('sendBtn');
-
-  if (!address || !amount || amount <= 0) {
-    strip.className = 'status-strip show error';
-    spinner.style.display = 'none';
-    msg.textContent = 'Please enter a valid address and amount.';
-    return;
+  function showTab(name) {
+    const isRecurring = name === 'recurring';
+    // swap panel visibility
+    document.getElementById('panel-send').style.display      = isRecurring ? 'none'  : 'block';
+    document.getElementById('panel-recurring').style.display = isRecurring ? 'block' : 'none';
+    // widen/narrow the page wrap
+    document.getElementById('page-wrap').style.maxWidth = isRecurring ? '880px' : '520px';
+    // swap button active state
+    document.getElementById('tab-send-btn').classList.toggle('active',      !isRecurring);
+    document.getElementById('tab-recurring-btn').classList.toggle('active',  isRecurring);
+    if (isRecurring) loadRecurring();
   }
 
-  btn.disabled = true;
-  strip.className = 'status-strip show info';
-  spinner.style.display = '';
-  msg.textContent = 'Processing transaction…';
+  async function getCurrentUserId() {
+    const res = await fetch('/api/user');
+    if (!res.ok) throw new Error('Not logged in');
+    return (await res.json()).user.id;
+  }
 
-  try {
-    const res  = await fetch('/api/transactions/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ walletId, amount, address, currency })
-    });
-    const data = await res.json();
+  /* populate currency dropdown from real wallets */
+  async function loadWalletsForSend() {
+    try {
+      const userId = await getCurrentUserId();
+      const wallets = await (await fetch(`/api/transactions/wallets/${userId}`)).json();
+      const sel = document.getElementById('currency');
+      const cryptos = wallets.filter(w => w.currency !== 'GBP');
+      if (cryptos.length) {
+        sel.innerHTML = cryptos.map(w =>
+          `<option value="${w.id}" data-currency="${w.currency}">${w.currency}${w.name ? ' (' + w.name + ')' : ''}</option>`
+        ).join('');
+      }
+    } catch { /* silent */ }
+  }
+  document.addEventListener('DOMContentLoaded', loadWalletsForSend);
 
-    spinner.style.display = 'none';
-    btn.disabled = false;
+  /* ── Send ── */
+  async function sendCrypto() {
+    const address  = document.getElementById('address').value.trim();
+    const amount   = parseFloat(document.getElementById('amount').value);
+    const sel      = document.getElementById('currency');
+    const walletId = sel.value;
+    const currency = sel.options[sel.selectedIndex]?.getAttribute('data-currency');
+    const strip = document.getElementById('statusStrip');
+    const msg   = document.getElementById('statusMsg');
+    const spin  = document.getElementById('spinner');
+    const btn   = document.getElementById('sendBtn');
 
-    if (res.ok && data.success) {
-      strip.className = 'status-strip show success';
-      msg.textContent = `✓ Sent ${amount} ${currency}${data.value_gbp ? ` · £${data.value_gbp}` : ''}. TxID: ${data.txId || data.id || 'N/A'}`;
-      document.getElementById('address').value = '';
-      document.getElementById('amount').value  = '';
-    } else {
+    if (!address || !amount || amount <= 0) {
       strip.className = 'status-strip show error';
-      msg.textContent = data.message || 'Transaction failed.';
+      msg.textContent = 'Please enter a valid address and amount.';
+      return;
     }
-  } catch {
-    spinner.style.display = 'none';
-    btn.disabled = false;
-    strip.className = 'status-strip show error';
-    msg.textContent = 'Could not reach the server.';
+    btn.disabled = true;
+    strip.className = 'status-strip show info';
+    spin.style.display = ''; msg.textContent = 'Processing transaction…';
+
+    try {
+      const res  = await fetch('/api/transactions/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletId, amount, address, currency })
+      });
+      const data = await res.json();
+      spin.style.display = 'none'; btn.disabled = false;
+      if (res.ok && data.success) {
+        strip.className = 'status-strip show success';
+        msg.textContent = `✓ Sent ${amount} ${currency}${data.value_gbp ? ' · £' + data.value_gbp : ''}`;
+        document.getElementById('address').value = '';
+        document.getElementById('amount').value  = '';
+      } else {
+        strip.className = 'status-strip show error';
+        msg.textContent = data.message || 'Transaction failed.';
+      }
+    } catch {
+      spin.style.display = 'none'; btn.disabled = false;
+      strip.className = 'status-strip show error';
+      msg.textContent = 'Could not reach the server.';
+    }
   }
-}
+
+  /* ── Create recurring ── */
+  async function createRecurring() {
+    const address   = document.getElementById('rec-address').value.trim();
+    const amount    = parseFloat(document.getElementById('rec-amount').value);
+    const frequency = document.getElementById('rec-frequency').value;
+    const status    = document.getElementById('createStatus');
+    const msg       = document.getElementById('createMsg');
+    const spin      = document.getElementById('createSpinner');
+
+    if (!address || !amount || amount <= 0 || !frequency) {
+      status.className = 'create-status show error';
+      msg.textContent  = 'Please fill in all fields correctly.';
+      return;
+    }
+    status.className = 'create-status show info';
+    spin.style.display = ''; msg.textContent = 'Scheduling payment…';
+
+    try {
+      const userId = await getCurrentUserId();
+      const res  = await fetch('/api/transactions/recurring', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, address, amount, frequency })
+      });
+      const data = await res.json();
+      spin.style.display = 'none';
+      if (res.ok) {
+        status.className = 'create-status show success';
+        msg.textContent  = '✓ Recurring payment scheduled.';
+        document.getElementById('rec-address').value   = '';
+        document.getElementById('rec-amount').value    = '';
+        document.getElementById('rec-frequency').value = '';
+        loadRecurring();
+      } else {
+        status.className = 'create-status show error';
+        msg.textContent  = data.message || 'Failed to create recurring payment.';
+      }
+    } catch {
+      spin.style.display = 'none';
+      status.className = 'create-status show error';
+      msg.textContent  = 'Error connecting to server.';
+    }
+  }
+
+  /* ── Load recurring list ── */
+  async function loadRecurring() {
+    const list  = document.getElementById('paymentList');
+    const count = document.getElementById('listCount');
+    try {
+      const data = await (await fetch('/api/transactions/recurring')).json();
+      if (!Array.isArray(data) || data.length === 0) {
+        count.textContent = '0 payments';
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">🔁</div><p class="empty-text">No recurring payments yet.</p></div>`;
+        return;
+      }
+      const active = data.filter(p => p.status !== 'cancelled').length;
+      count.textContent = `${data.length} total · ${active} active`;
+      list.innerHTML = '';
+      data.forEach(p => {
+        const cancelled   = p.status === 'cancelled';
+        const nextDate    = p.nextExecution ? new Date(p.nextExecution).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+        const addrDisplay = p.address ? (p.address.length > 20 ? p.address.slice(0,10) + '…' + p.address.slice(-8) : p.address) : '—';
+        const item = document.createElement('div');
+        item.className = 'payment-item' + (cancelled ? ' is-cancelled' : '');
+        item.innerHTML = `
+          <div class="pi-top">
+            <span class="pi-amount">${p.amount ?? '—'} BTC</span>
+            <span class="badge ${cancelled ? 'badge-danger' : 'badge-active'}">${p.status ?? 'active'}</span>
+          </div>
+          <div class="pi-meta">
+            <div class="pi-meta-item"><span class="pi-meta-label">Recipient</span><span class="pi-meta-value" title="${p.address}">${addrDisplay}</span></div>
+            <div class="pi-meta-item"><span class="pi-meta-label">Frequency</span><span class="pi-meta-value">${p.frequency ?? '—'}</span></div>
+            <div class="pi-meta-item"><span class="pi-meta-label">Next Run</span><span class="pi-meta-value">${nextDate}</span></div>
+            <div class="pi-meta-item"><span class="pi-meta-label">Created</span><span class="pi-meta-value">${p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB') : '—'}</span></div>
+          </div>
+          ${!cancelled ? `<div class="pi-actions"><button class="btn btn-danger" onclick="cancelRecurring('${p.id ?? ''}')">Cancel</button></div>` : ''}`;
+        list.appendChild(item);
+      });
+    } catch {
+      count.textContent = 'Error';
+      list.innerHTML = `<div class="empty-state"><p class="empty-text">Error loading payments.</p></div>`;
+    }
+  }
+
+  async function cancelRecurring(id) {
+    if (!id) return;
+    const status = document.getElementById('createStatus');
+    const msg    = document.getElementById('createMsg');
+    try {
+      const res  = await fetch('/api/transactions/recurring/' + id, { method: 'DELETE' });
+      const data = await res.json();
+      status.className = res.ok ? 'create-status show success' : 'create-status show error';
+      msg.textContent  = (res.ok ? '✓ ' : '') + (data.message || (res.ok ? 'Payment cancelled.' : 'Failed to cancel.'));
+      if (res.ok) loadRecurring();
+    } catch {
+      status.className = 'create-status show error';
+      msg.textContent  = 'Error connecting to server.';
+    }
+  }
 </script>
 </body>
 </html>

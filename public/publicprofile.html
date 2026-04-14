@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Public Profiles</title>
+    <title>CryptoVault — Public Profiles</title>
     <link rel="stylesheet" href="/publicprofile.css">
 </head>
 <body>
     <nav class="top-nav">
         <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
         <a href="/index.html" style="margin-left:auto">Home</a>
-        <a href="topup.html">GBP Balance</a>
         <a href="/portfolio.html">Portfolio</a>
         <a href="/send.html">Send</a>
         <a href="/receive.html">Receive</a>
-        <a href="/recurring.html">Recurring</a>
         <a href="/history.html">History</a>
         <a href="/publicprofile.html" class="active">Public Profile</a>
         <a href="/settings.html">Settings</a>
         <a href="/logout">Logout</a>
     </nav>
-  <div class="page-head">
-      <h1> Public <span>Profiles</span></h1>
-      <p>Create or Browse User Public Profiles.</p>
-  </div>
+
+    <div class="page-head">
+        <h1>Public <span>Profiles</span></h1>
+        <p>Create or browse user public profiles.</p>
+    </div>
+
     <div class="container">
         <div class="button-group">
             <button class="active" onclick="showSection('create')">Create Profile</button>
@@ -50,11 +50,9 @@
         </div>
 
         <div id="browse" class="content">
-            <div class="profiles-help">Click a profile card to view more.</div>
-            <input type="text" id="profile-search" placeholder="Search by Name, or &quot@&quot + username." oninput="filterProfiles(this.value)">
-            <div class="profiles-list">
-                <!-- Profiles will be dynamically added here -->
-            </div>
+            <div class="profiles-help">Click a profile card to view more details.</div>
+            <input type="text" id="profile-search" placeholder='Search by name, or "@" + username.' oninput="filterProfiles(this.value)">
+            <div class="profiles-list"></div>
         </div>
     </div>
 

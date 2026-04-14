@@ -2,236 +2,71 @@
 
 body { padding-top: 64px; }
 
-/* ── Wallet value chip in nav ── */
 #walletValue {
   font-family: var(--font-mono);
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.88rem; font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.02em;
-  margin-left: auto;
-  padding: 6px 14px;
+  margin-left: auto; padding: 6px 14px;
   background: var(--accent-bg);
   border: 1px solid rgba(0,203,168,0.2);
-  border-radius: var(--r-md);
-  white-space: nowrap;
+  border-radius: var(--r-md); white-space: nowrap;
 }
 
-/* ── Sidebar ── */
 #priceContainer {
-  position: fixed;
-  left: 0;
-  top: 64px;
-  width: 272px;
-  height: calc(100vh - 64px);
+  position: fixed; left: 0; top: 64px;
+  width: 272px; height: calc(100vh - 64px);
   overflow-y: auto;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
+  background: var(--surface); border-right: 1px solid var(--border);
   padding: 16px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 100;
+  display: flex; flex-direction: column; gap: 6px; z-index: 100;
 }
 
-/* ── Coin cards ── */
 .coin-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: var(--r-md);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-radius: var(--r-md);
+  background: var(--surface-2); border: 1px solid var(--border);
   cursor: pointer;
-  transition:
-    border-color var(--t-base) var(--ease),
-    background   var(--t-base) var(--ease);
+  transition: border-color var(--t-base) var(--ease), background var(--t-base) var(--ease);
 }
-
-.coin-card:hover {
-  border-color: var(--accent);
-  background: var(--accent-bg);
-}
-
-.coin-main {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.coin-logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.coin-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.coin-name {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.coin-price {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-2);
-}
-
-.coin-trend {
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  font-weight: 700;
-  flex-shrink: 0;
-  margin-left: 8px;
-}
-
+.coin-card:hover { border-color: var(--accent); background: var(--accent-bg); }
+.coin-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.coin-logo  { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+.coin-info  { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.coin-name  { font-size: 0.82rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.coin-price { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-2); }
+.coin-trend { font-family: var(--font-mono); font-size: 0.76rem; font-weight: 700; flex-shrink: 0; margin-left: 8px; }
 .trend-up   { color: var(--success); }
 .trend-down { color: var(--danger);  }
 
-/* ── Main dashboard ── */
 .dashboard {
-  margin-left: 272px;
-  padding: 32px;
+  margin-left: 272px; padding: 32px 32px 24px;
   min-height: calc(100vh - 64px);
 }
-
-.dash-header {
-  margin-bottom: 24px;
-}
-
-.dash-header h2 {
-  font-family: var(--font-display);
-  font-size: 1.45rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  color: var(--text);
-}
-
-.dash-header h2 span { color: var(--accent); }
-
-.dash-header p {
-  color: var(--text-2);
-  font-size: 0.85rem;
-  margin-top: 6px;
-}
-
-/* ── Chart card ── */
-.chart-container {
+.wallet-value-card {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-2xl);
-  padding: 24px;
-  height: 380px;
-  box-shadow: var(--shadow-md);
-  position: relative;
-  overflow: hidden;
+  border: 1px solid rgba(0,203,168,0.25);
+  border-radius: var(--r-xl); padding: 20px 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 0 40px rgba(0,203,168,0.06);
 }
-
+.wallet-label {
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-2); margin-bottom: 8px;
+}
+#walletValue {
+  font-family: var(--font-mono); font-size: 2.2rem;
+  font-weight: 700; color: var(--accent);
+  letter-spacing: -0.02em; line-height: 1;
+  background: none; border: none; padding: 0; margin: 0;
+}
+.chart-container {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-2xl); padding: 24px; height: 340px;
+  box-shadow: var(--shadow-md); position: relative; overflow: hidden;
+}
 .chart-container::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-2) 30%, var(--border-3) 50%, var(--border-2) 70%, transparent);
   pointer-events: none;
 }
-
-.wallet-value-card {
-  background: var(--surface);
-  border: 1px solid rgba(0, 203, 168, 0.25);
-  border-radius: var(--r-xl);
-  padding: 24px 32px;
-  margin-bottom: 24px;
-  box-shadow: 0 0 40px rgba(0, 203, 168, 0.06);
-}
-
-.wallet-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-2);
-  margin-bottom: 8px;
-}
-
-#walletValue {
-  font-family: var(--font-mono);
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: -0.02em;
-  line-height: 1;
-  background: none;
-  border: none;
-  padding: 0;
-}
-/* Buy Crypto Form Sizing */
-.wallets-balance-card,
-.wallets-list-card,
-.buy-crypto-card {
-  position: fixed;
-  bottom: 32px;
-  right: 32px;
-  max-width: 340px;
-  width: 100%;
-  z-index: 200;
-  padding: 24px 18px;
-  box-shadow: var(--shadow-md);
-  background: var(--surface);
-  border-radius: var(--r-xl);
-}
-
-.buy-crypto-card {
-  position: fixed;
-  left: 50%;
-  bottom: 32px;
-  transform: translateX(-50%);
-  max-width: 340px;
-  width: 100%;
-  z-index: 200;
-  padding: 24px 18px;
-  box-shadow: var(--shadow-md);
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  margin-top: 0 !important;
-}
-
-.buy-crypto-card .input-group input,
-.buy-crypto-card .input-group select {
-  width: 60%;
-  max-width: 60%;
-  margin: 0 auto;
-  display: block;
-}
-
-.buy-crypto-card .btn-primary {
-  width: 60%;
-  max-width: 60%;
-  margin: 18px auto 0 auto;
-  display: block;
-  font-size: 1rem;
-  padding: 10px 0;
-}
-
-.wallet-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.05rem;
-  margin-bottom: 8px;
-}
-
-.wallet-currency { font-weight: 700; color: var(--accent); }
-.wallet-balance { font-family: var(--font-mono); }

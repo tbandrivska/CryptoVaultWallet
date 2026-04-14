@@ -1,66 +1,246 @@
 @import url('/shared.css');
 
-body {
+body { padding-top: 64px; }
+
+/* ── Wallet value chip in nav ── */
+#walletValue {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  margin-left: auto;
+  padding: 6px 14px;
+  background: var(--accent-bg);
+  border: 1px solid rgba(0,203,168,0.2);
+  border-radius: var(--r-md);
+  white-space: nowrap;
+}
+
+/* ── Sidebar ── */
+#priceContainer {
+  position: fixed;
+  left: 0;
+  top: 64px;
+  width: 272px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 16px 14px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  z-index: 100;
+}
+
+/* ── Coin cards ── */
+.coin-card {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 96px 24px 40px;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition:
+    border-color var(--t-base) var(--ease),
+    background   var(--t-base) var(--ease);
 }
 
-.page-wrap {
-  width: 100%;
-  max-width: 480px;
-  animation: fadeUp 0.42s var(--ease) both;
+.coin-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
 
-/* Page header */
-.page-head {
-  margin-bottom: 28px;
+.coin-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
-.page-head h1 {
-  font-family: var(--font-display);
-  font-size: 1.7rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+.coin-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.coin-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.coin-name {
+  font-size: 0.82rem;
+  font-weight: 700;
   color: var(--text);
-  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.page-head h1 span { color: var(--accent); }
 
-.page-head p {
+.coin-price {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
   color: var(--text-2);
-  font-size: 0.875rem;
-  margin-top: 7px;
 }
 
-/* Send card */
-.send-card {
+.coin-trend {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.trend-up   { color: var(--success); }
+.trend-down { color: var(--danger);  }
+
+/* ── Main dashboard ── */
+.dashboard {
+  margin-left: 272px;
+  padding: 32px;
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dash-header {
+  margin-bottom: 0;
+}
+
+.dash-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--text);
+}
+
+.dash-header h2 span { color: var(--accent); }
+
+.dash-header p {
+  color: var(--text-2);
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+/* ── Chart card ── */
+.chart-container {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-2xl);
-  padding: 32px;
-  box-shadow: var(--shadow-lg);
+  padding: 24px;
+  height: 340px;
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
 }
 
-.send-card::after {
+.chart-container::after {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-2) 30%, var(--border-3) 50%, var(--border-2) 70%, transparent);
+  pointer-events: none;
 }
 
-/* Amount + currency row */
-.amount-row {
+/* ── Wallet value card ── */
+.wallet-value-card {
+  background: var(--surface);
+  border: 1px solid rgba(0, 203, 168, 0.25);
+  border-radius: var(--r-xl);
+  padding: 20px 28px;
+  box-shadow: 0 0 40px rgba(0, 203, 168, 0.06);
+}
+
+.wallet-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 8px;
+}
+
+#walletValue {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* ── Bottom row: wallets list + buy crypto ── */
+.bottom-row {
   display: grid;
-  grid-template-columns: 1fr 140px;
-  gap: 12px;
-  margin-top: 18px;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
 }
 
-.amount-row .field { margin-top: 0; }
+@media (max-width: 900px) {
+  .bottom-row { grid-template-columns: 1fr; }
+}
+
+/* ── Shared card style ── */
+.panel-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.panel-card h2 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 18px;
+  letter-spacing: -0.01em;
+}
+
+/* ── Wallets list ── */
+.wallet-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.wallet-row:last-child { border-bottom: none; }
+.wallet-currency { font-weight: 700; color: var(--accent); }
+.wallet-balance { font-family: var(--font-mono); color: var(--text-2); font-size: 0.82rem; }
+
+/* ── Buy crypto form ── */
+.buy-crypto-card .input-group {
+  margin-bottom: 14px;
+}
+
+.buy-crypto-card .input-group label {
+  display: block;
+  font-size: 0.695rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+.buy-crypto-card .btn-primary {
+  margin-top: 6px;
+}

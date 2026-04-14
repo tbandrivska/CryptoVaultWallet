@@ -1,223 +1,197 @@
+/* ── Section switching ── */
 function showSection(section) {
-    document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('button').forEach(el => el.classList.remove('active'));
-    document.getElementById(section).classList.add('active');
-    event.target.classList.add('active');
-    
-    if (section === 'browse') {
-        loadProfiles();
-    }
+  document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.button-group button').forEach(el => el.classList.remove('active'));
+  document.getElementById(section).classList.add('active');
+  event.target.classList.add('active');
+  if (section === 'browse') {
+    // Show hint, don't load until user searches
+    const list = document.querySelector('.profiles-list');
+    if (list && list.innerHTML === '') list.innerHTML = '<div style="padding:20px;color:var(--text-2);font-size:0.875rem;text-align:center;">Type a name or @username to search for profiles.</div>';
+  }
 }
 
-let createForm;
-let createMessage;
-const availableCryptos = ['BTC', 'ETH', 'USDT', 'SOL', 'ADA', 'DOT', 'USDC', 'LTC', 'DOGE', 'BNB', 'LINK'];
-let currentUser = null;
+const availableCryptos = ['BTC','ETH','USDT','SOL','ADA','DOT','USDC','LTC','DOGE','BNB','LINK'];
+let cachedProfiles = [];
+let currentUser   = null;
+let createForm, createMessage;
 
 window.addEventListener('DOMContentLoaded', async () => {
-    createForm = document.querySelector('form');
-    createMessage = document.getElementById('create-message');
+  createForm    = document.querySelector('#create form');
+  createMessage = document.getElementById('create-message');
 
-    // Get current user
-    try {
-        const response = await fetch('/api/user');
-        if (response.ok) {
-            const data = await response.json();
-            currentUser = data.user;
-        } else {
-            // Not logged in, redirect to login
-            window.location.href = '/login';
-            return;
-        }
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        window.location.href = '/login';
-        return;
+  try {
+    const res = await fetch('/api/user');
+    if (res.ok) {
+      currentUser = (await res.json()).user;
+    } else {
+      window.location.href = '/login'; return;
     }
+  } catch {
+    window.location.href = '/login'; return;
+  }
 
-    if (createForm) {
-        createForm.addEventListener('submit', handleCreateProfile);
-    }
+  initCryptoSelector();
+  if (createForm) createForm.addEventListener('submit', handleCreateProfile);
 
-    initCryptoSelector();
 });
 
-async function getProfiles() {
-    const response = await fetch('/api/profiles');
-    if (!response.ok) {
-        throw new Error(`Failed to load profiles: ${response.status}`);
-    }
-    return await response.json();
-}
-
+/* ── Crypto chip selector ── */
 function initCryptoSelector() {
-    const cryptoContainer = document.getElementById('acceptedCryptos');
-    if (!cryptoContainer) {
-        return;
-    }
-
-    cryptoContainer.innerHTML = '';
-    availableCryptos.forEach(symbol => {
-        const chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'crypto-chip';
-        chip.dataset.value = symbol;
-        chip.textContent = symbol;
-
-        chip.addEventListener('click', () => {
-            chip.classList.toggle('selected');
-        });
-
-        cryptoContainer.appendChild(chip);
-    });
+  const container = document.getElementById('acceptedCryptos');
+  if (!container) return;
+  container.innerHTML = '';
+  availableCryptos.forEach(sym => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'crypto-chip';
+    chip.dataset.value = sym;
+    chip.textContent = sym;
+    chip.addEventListener('click', () => chip.classList.toggle('selected'));
+    container.appendChild(chip);
+  });
 }
 
 function resetCryptoChips() {
-    document.querySelectorAll('.crypto-chip.selected').forEach(chip => chip.classList.remove('selected'));
+  document.querySelectorAll('.crypto-chip.selected').forEach(c => c.classList.remove('selected'));
 }
 
-async function handleCreateProfile(event) {
-    event.preventDefault();
+/* ── Message helper ── */
+function showMsg(text, type) {
+  if (!createMessage) return;
+  createMessage.textContent = text;
+  createMessage.className = '';
+  void createMessage.offsetWidth;
+  createMessage.className = `form-message ${type}`;
+}
 
-    const name = document.getElementById('name').value.trim();
-    const bio = document.getElementById('bio').value.trim();
+/* ── Create profile ── */
+async function handleCreateProfile(e) {
+  e.preventDefault();
 
-    const acceptedCryptos = Array.from(document.querySelectorAll('.crypto-select .crypto-chip.selected'))
-        .map(chip => chip.dataset.value)
-        .filter(Boolean);
+  const name   = document.getElementById('name').value.trim();
+  const bio    = document.getElementById('bio').value.trim();
+  const cryptos = Array.from(document.querySelectorAll('.crypto-chip.selected'))
+                        .map(c => c.dataset.value);
 
-    if (!name || !bio || acceptedCryptos.length === 0) {
-        return showCreateMessage('Please fill in all fields and select at least one cryptocurrency.', 'error');
-    }
+  if (!name || !bio || cryptos.length === 0) {
+    showMsg('Please fill in all fields and select at least one cryptocurrency.', 'error');
+    return;
+  }
 
+  showMsg('Creating profile…', 'info');
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    let res;
     try {
-        const response = await fetch('/api/profiles', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: name,
-                bio: bio,
-                acceptedCryptos: acceptedCryptos
-            })
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            showCreateMessage('Profile created successfully!', 'success');
-            createForm.reset();
-            resetCryptoChips();
-            if (document.getElementById('browse').classList.contains('active')) {
-                loadProfiles();
-            }
-        } else {
-            showCreateMessage(result.message || 'Failed to create profile.', 'error');
-        }
-    } catch (error) {
-        console.error('Error creating profile:', error);
-        showCreateMessage('Failed to create profile. Please try again.', 'error');
+      res = await fetch('/api/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, bio, acceptedCryptos: cryptos }),
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeout);
     }
-}
+    const data = await res.json();
 
-function showCreateMessage(text, type) {
-    if (!createMessage) {
-        return;
-    }
-
-    createMessage.textContent = text;
-    createMessage.className = `form-message ${type}`;
-}
-
-let cachedProfiles = [];
-
-function filterProfiles(query) {
-    const profilesList = document.querySelector('.profiles-list');
-    const trimmed = query.trim();
-    let filtered;
-    if (!trimmed) {
-        filtered = cachedProfiles;
-    } else if (trimmed.startsWith('@')) {
-        const term = trimmed.slice(1).toLowerCase();
-        filtered = cachedProfiles.filter(p => p.username.toLowerCase().includes(term));
+    if (data.success) {
+      showMsg('✓ Profile created successfully!', 'success');
+      createForm.reset();
+      resetCryptoChips();
+      // Refresh the cached list so browse shows the new profile
+      await loadProfiles();
     } else {
-        const term = trimmed.toLowerCase();
-        filtered = cachedProfiles.filter(p => p.name.toLowerCase().includes(term));
+      showMsg(data.message || 'Failed to create profile.', 'error');
     }
-    renderProfiles(profilesList, filtered);
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      showMsg('Request timed out — check your server is running and profileService.js is updated.', 'error');
+    } else {
+      showMsg('Network error — please try again.', 'error');
+    }
+  }
 }
 
+/* ── Browse profiles ── */
 async function loadProfiles() {
-    const profilesList = document.querySelector('.profiles-list');
-    profilesList.innerHTML = ''; // Clear existing content
+  const list   = document.querySelector('.profiles-list');
+  const search = document.getElementById('profile-search');
+  if (search) search.value = '';
+  if (list) list.innerHTML = '<div style="padding:20px;color:var(--text-2);font-size:0.875rem;">Loading…</div>';
 
-    // Clear search on reload
-    const searchInput = document.getElementById('profile-search');
-    if (searchInput) searchInput.value = '';
-
-    try {
-        const profiles = await getProfiles();
-        cachedProfiles = profiles;
-        renderProfiles(profilesList, profiles);
-    } catch (error) {
-        profilesList.innerHTML = '<div class="error-message">Unable to load profiles.</div>';
-        console.error('Error loading profiles:', error);
-    }
+  try {
+    const profiles = await (await fetch('/api/profiles')).json();
+    cachedProfiles = Array.isArray(profiles) ? profiles : [];
+    renderProfiles(list, cachedProfiles);
+  } catch {
+    if (list) list.innerHTML = '<div class="error-message">Unable to load profiles.</div>';
+  }
 }
 
-function renderProfiles(profilesList, profiles) {
-    profilesList.innerHTML = '';
+async function filterProfiles(query) {
+  const list    = document.querySelector('.profiles-list');
+  const trimmed = query.trim();
+  if (!trimmed) {
+    list.innerHTML = '<div style="padding:20px;color:var(--text-2);font-size:0.875rem;text-align:center;">Type a name or @username to search for profiles.</div>';
+    return;
+  }
+  // Fetch fresh on first search if cache is empty
+  if (cachedProfiles.length === 0) {
+    list.innerHTML = '<div style="padding:20px;color:var(--text-2);font-size:0.875rem;">Loading…</div>';
+    try {
+      const profiles = await (await fetch('/api/profiles')).json();
+      cachedProfiles = Array.isArray(profiles) ? profiles : [];
+    } catch { list.innerHTML = '<div class="error-message">Could not load profiles.</div>'; return; }
+  }
+  const isUser = trimmed.startsWith('@');
+  const val    = (isUser ? trimmed.slice(1) : trimmed).toLowerCase();
+  const field  = isUser ? 'username' : 'name';
+  const hits   = cachedProfiles.filter(p => (p[field] || '').toLowerCase().includes(val));
+  renderProfiles(list, hits, `No profiles match "${trimmed}".`);
+}
 
-        if (!Array.isArray(profiles) || profiles.length === 0) {
-            profilesList.innerHTML = '<div class="error-message">No profiles found.</div>';
-            return;
-        }
+function renderProfiles(list, profiles, emptyMsg = 'No profiles yet — be the first to create one!') {
+  if (!list) return;
+  list.innerHTML = '';
+  if (!profiles.length) {
+    list.innerHTML = `<div class="error-message">${emptyMsg}</div>`; return;
+  }
+  profiles.forEach(profile => {
+    const card = document.createElement('div');
+    card.className = 'profile-card';
 
-    profiles.forEach(profile => {
-        const profileCard = document.createElement('div');
-        profileCard.className = 'profile-card';
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'profile-header';
 
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'profile-name';
-        nameDiv.textContent = profile.name;
+    const textDiv = document.createElement('div');
+    textDiv.className = 'profile-text';
+    textDiv.innerHTML = `<div class="profile-name">${profile.name}</div>
+                         <div class="profile-username">@${profile.username}</div>`;
 
-        const usernameDiv = document.createElement('div');
-        usernameDiv.className = 'profile-username';
-        usernameDiv.textContent = "@" + profile.username;
-
-        const headerDiv = document.createElement('div');
-        headerDiv.className = 'profile-header';
-
-        const textWrapper = document.createElement('div');
-        textWrapper.className = 'profile-text';
-        textWrapper.appendChild(nameDiv);
-        textWrapper.appendChild(usernameDiv);
-
-        const tagWrapper = document.createElement('div');
-        tagWrapper.className = 'profile-tags';
-
-        (profile.acceptedCryptos || []).forEach(crypto => {
-            const tag = document.createElement('span');
-            tag.className = 'profile-tag';
-            tag.textContent = crypto;
-            tagWrapper.appendChild(tag);
-        });
-
-        const bioDiv = document.createElement('div');
-        bioDiv.className = 'profile-bio hidden';
-        bioDiv.textContent = profile.bio || 'No bio available.';
-
-        profileCard.addEventListener('click', () => {
-            bioDiv.classList.toggle('hidden');
-            profileCard.classList.toggle('expanded');
-        });
-
-        headerDiv.appendChild(textWrapper);
-        headerDiv.appendChild(tagWrapper);
-
-        profileCard.appendChild(headerDiv);
-        profileCard.appendChild(bioDiv);
-        profilesList.appendChild(profileCard);
+    const tagDiv = document.createElement('div');
+    tagDiv.className = 'profile-tags';
+    (profile.acceptedCryptos || []).forEach(c => {
+      const tag = document.createElement('span');
+      tag.className = 'profile-tag'; tag.textContent = c;
+      tagDiv.appendChild(tag);
     });
+
+    const bioDiv = document.createElement('div');
+    bioDiv.className = 'profile-bio hidden';
+    bioDiv.textContent = profile.bio || 'No bio available.';
+
+    card.addEventListener('click', () => {
+      bioDiv.classList.toggle('hidden');
+      card.classList.toggle('expanded');
+    });
+
+    headerDiv.appendChild(textDiv);
+    headerDiv.appendChild(tagDiv);
+    card.appendChild(headerDiv);
+    card.appendChild(bioDiv);
+    list.appendChild(card);
+  });
 }

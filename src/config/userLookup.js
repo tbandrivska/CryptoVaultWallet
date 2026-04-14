@@ -1,12 +1,9 @@
 import { db } from './db.js';
 
-export const findUserByUsername = (username) => {
-  return new Promise((resolve, reject) => {
-    const sql = "SELECT id, username FROM users WHERE username LIKE ?";
-
-    db.query(sql, [`%${username}%`], (err, results) => {
-      if (err) return reject(err);
-      resolve(results);
-    });
-  });
+export const findUserByUsername = async (username) => {
+  const [results] = await db.query(
+    "SELECT id, username FROM users WHERE username LIKE ?",
+    [`%${username}%`]
+  );
+  return results;
 };

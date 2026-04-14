@@ -1,48 +1,65 @@
-CREATE DATABASE crypto_wallet;
+CREATE DATABASE IF NOT EXISTS crypto_wallet;
 USE crypto_wallet;
 
-CREATE TABLE users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(50) UNIQUE,
-  email VARCHAR(100) UNIQUE,
-  password VARCHAR(255)
-);
+-- --------------------------------------------------------
+-- Users
+-- --------------------------------------------------------
+CREATE TABLE `users` (
+  `id`          int(11)      NOT NULL AUTO_INCREMENT,
+  `username`    varchar(50)  DEFAULT NULL,
+  `email`       varchar(100) DEFAULT NULL,
+  `password`    varchar(255) DEFAULT NULL,
+  `phoneNumber` varchar(20)  DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email`    (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE wallets (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT,
-  currency VARCHAR(10),
-  balance DECIMAL(18,8),
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
+-- --------------------------------------------------------
+-- Wallets
+-- --------------------------------------------------------
+CREATE TABLE `wallets` (
+  `id`       int(11)         NOT NULL AUTO_INCREMENT,
+  `user_id`  int(11)         DEFAULT NULL,
+  `currency` varchar(10)     DEFAULT NULL,
+  `balance`  decimal(18,8)   DEFAULT NULL,
+  `name`     varchar(50)     DEFAULT NULL,
+  `address`  varchar(255)    DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `wallets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE transactions (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  wallet_id INT,
-  type VARCHAR(10),
-  amount DECIMAL(18,8),
-  currency VARCHAR(10),
-  address VARCHAR(255),
-  value_gbp DECIMAL(18,2),
-  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  price DECIMAL(18,8),
-  status VARCHAR(20),
-  FOREIGN KEY (wallet_id) REFERENCES wallets(id)
-);
+-- --------------------------------------------------------
+-- Transactions
+-- --------------------------------------------------------
+CREATE TABLE `transactions` (
+  `id`        int(11)       NOT NULL AUTO_INCREMENT,
+  `wallet_id` int(11)       DEFAULT NULL,
+  `type`      varchar(10)   DEFAULT NULL,
+  `amount`    decimal(18,8) DEFAULT NULL,
+  `currency`  varchar(10)   DEFAULT NULL,
+  `address`   varchar(255)  DEFAULT NULL,
+  `value_gbp` decimal(18,2) DEFAULT NULL,
+  `timestamp` timestamp     NOT NULL DEFAULT current_timestamp(),
+  `price`     decimal(18,8) DEFAULT NULL,
+  `status`    varchar(20)   DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `wallet_id` (`wallet_id`),
+  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`wallet_id`) REFERENCES `wallets` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-  
-CREATE TABLE profiles (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(50) UNIQUE, 
-  displayname VARCHAR(50), 
-  tags VARCHAR(100),
-  addresses VARCHAR(200),
-  bio VARCHAR(500),
-  FOREIGN KEY (username) REFERENCES users(username)
-)ALTER TABLE wallets ADD COLUMN name VARCHAR(50) DEFAULT NULL;
-ALTER TABLE transactions DROP FOREIGN KEY transactions_ibfk_1;
-ALTER TABLE transactions
-  ADD CONSTRAINT transactions_ibfk_1
-  FOREIGN KEY (wallet_id) REFERENCES wallets(id)
-  ON DELETE CASCADE;
-ALTER TABLE wallets ADD COLUMN address VARCHAR(255) DEFAULT NULL;
+-- --------------------------------------------------------
+-- Profiles
+-- --------------------------------------------------------
+CREATE TABLE `profiles` (
+  `id`          int(11)      NOT NULL AUTO_INCREMENT,
+  `username`    varchar(50)  DEFAULT NULL,
+  `displayname` varchar(50)  DEFAULT NULL,
+  `tags`        varchar(100) DEFAULT NULL,
+  `addresses`   varchar(200) DEFAULT NULL,
+  `bio`         varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  CONSTRAINT `profiles_ibfk_1` FOREIGN KEY (`username`) REFERENCES `users` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

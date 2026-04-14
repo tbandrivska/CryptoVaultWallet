@@ -1,31 +1,22 @@
 import { db } from "./db.js";
 
-export const getAllProfiles = () => {
-  return new Promise((resolve, reject) => {
-    const sql = "SELECT * FROM profiles";
-    db.query(sql, (err, results) => {
-      if (err) return reject(err);
-      resolve(results);
-    });
-  });
+export const getAllProfiles = async () => {
+  const [results] = await db.query("SELECT * FROM profiles");
+  return results;
 };
 
-export const createProfile = (username, displayname, tags, addresses, bio) => {
-  return new Promise((resolve, reject) => {
-    const sql = "INSERT INTO profiles (username, displayname, tags, addresses, bio) VALUES (?, ?, ?, ?, ?)";
-    db.query(sql, [username, displayname, tags, addresses, bio], (err, result) => {
-      if (err) return reject(err);
-      resolve(result);
-    });
-  });
+export const createProfile = async (username, displayname, tags, addresses, bio) => {
+  const [result] = await db.query(
+    "INSERT INTO profiles (username, displayname, tags, addresses, bio) VALUES (?, ?, ?, ?, ?)",
+    [username, displayname, tags, addresses, bio]
+  );
+  return result;
 };
 
-export const getProfileByUsername = (username) => {
-  return new Promise((resolve, reject) => {
-    const sql = "SELECT * FROM profiles WHERE username = ?";
-    db.query(sql, [username], (err, results) => {
-      if (err) return reject(err);
-      resolve(results[0]);
-    });
-  });
+export const getProfileByUsername = async (username) => {
+  const [results] = await db.query(
+    "SELECT * FROM profiles WHERE username = ?",
+    [username]
+  );
+  return results[0];
 };

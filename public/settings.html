@@ -11,11 +11,9 @@
   <nav class="top-nav">
     <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
     <a href="/index.html" style="margin-left:auto">Home</a>
-    <a href="topup.html">GBP Balance</a>
     <a href="/portfolio.html">Portfolio</a>
     <a href="/send.html">Send</a>
     <a href="/receive.html">Receive</a>
-    <a href="/recurring.html">Recurring</a>
     <a href="/history.html">History</a>
     <a href="/publicprofile.html">Public Profile</a>
     <a href="/settings.html" class="active">Settings</a>
@@ -28,6 +26,7 @@
       <p>Manage your CryptoVault account and preferences</p>
     </div>
 
+    <!-- Change username -->
     <div class="settings-card">
       <h2>Change Username</h2>
       <form id="usernameForm" onsubmit="changeUsername(event)">
@@ -39,104 +38,24 @@
         <p id="usernameMsg" class="status-text"></p>
       </form>
     </div>
+
   </div>
-    <script>
+
+  <script>
     function changeUsername(event) {
       event.preventDefault();
       const newUsername = document.getElementById('newUsername').value.trim();
       const msg = document.getElementById('usernameMsg');
       if (newUsername.length < 3) {
-        msg.textContent = "Username must be at least 3 characters.";
-        msg.style.color = "var(--danger)";
+        msg.textContent = 'Username must be at least 3 characters.';
+        msg.style.color = 'var(--danger)';
         return;
       }
-      // Here you would send a request to your backend to change the username
-      msg.textContent = "Username changed successfully!";
-      msg.style.color = "var(--success)";
-      document.getElementById('newUsername').value = "";
+      msg.textContent = 'Username changed successfully!';
+      msg.style.color = 'var(--success)';
+      document.getElementById('newUsername').value = '';
     }
-  </script>
-  <div class="settings-card" id="walletManager">
-  <h2>Manage Wallets</h2>
-  <form id="createWalletForm">
-    <div class="input-group">
-      <label for="walletCurrency">Currency</label>
-      <select id="walletCurrency">
-        <option value="BTC">Bitcoin (BTC)</option>
-        <option value="ETH">Ethereum (ETH)</option>
-        <!-- Add more as needed -->
-      </select>
-    </div>
-    <div class="input-group">
-      <label for="walletName">Wallet Name</label>
-      <input type="text" id="walletName" placeholder="e.g. My BTC Wallet" />
-    </div>
-    <button type="submit" class="btn btn-primary">Create Wallet</button>
-    <div id="createWalletMsg" class="status-text"></div>
-  </form>
-  <div id="walletsManageList"></div>
-</div>
-<script>
-async function getCurrentUserId() {
-  const res = await fetch('/api/user');
-  if (!res.ok) throw new Error('Not logged in');
-  const data = await res.json();
-  return data.user.id;
-}
 
-async function loadWalletsManage() {
-  const userId = await getCurrentUserId();
-  const res = await fetch(`/api/transactions/wallets/${userId}`);
-  const wallets = await res.json();
-  const list = document.getElementById('walletsManageList');
-  list.innerHTML = wallets.map(w => `
-    <div class="wallet-row">
-      <span>${w.name || '(No Name)'} — ${w.currency} (${Number(w.balance).toLocaleString(undefined, {maximumFractionDigits: 8})})</span>
-      <input type="text" placeholder="Rename" id="rename-${w.id}" style="width:100px;">
-      <button onclick="renameWallet(${w.id})">Rename</button>
-      <button onclick="deleteWallet(${w.id})" style="color:red;">Delete</button>
-    </div>
-  `).join('');
-}
-window.renameWallet = async function(walletId) {
-  const input = document.getElementById('rename-' + walletId);
-  const name = input.value.trim();
-  if (!name) return;
-  await fetch(`/api/transactions/wallets/${walletId}/rename`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name })
-  });
-  loadWalletsManage();
-};
-window.deleteWallet = async function(walletId) {
-  if (!confirm('Delete this wallet?')) return;
-  await fetch(`/api/transactions/wallets/${walletId}`, { method: 'DELETE' });
-  loadWalletsManage();
-};
-document.getElementById('createWalletForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const currency = document.getElementById('walletCurrency').value;
-  const name = document.getElementById('walletName').value;
-  const msg = document.getElementById('createWalletMsg');
-  msg.textContent = '';
-  const userId = await getCurrentUserId();
-  const res = await fetch('/api/transactions/wallets/create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, currency, name })
-  });
-  const data = await res.json();
-  if (data.success) {
-    msg.textContent = "Wallet created!";
-    msg.style.color = "var(--success)";
-    loadWalletsManage();
-  } else {
-    msg.textContent = data.message || "Failed to create wallet.";
-    msg.style.color = "var(--danger)";
-  }
-});
-loadWalletsManage();
-</script>
+  </script>
 </body>
 </html>

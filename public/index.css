@@ -1,7 +1,7 @@
 /* Layout Container */
 .dashboard-container {
-    max-width: 1100px;
-    margin: 100px auto 40px; /* Space for the fixed nav */
+    max-width: 960px;
+    margin: 100px auto 40px;
     padding: 0 24px;
 }
 
@@ -10,31 +10,27 @@
     text-align: center;
     margin-bottom: 48px;
 }
-
 .hero-section h1 {
     font-family: var(--font-display);
     font-size: 2.5rem;
     font-weight: 800;
     margin-bottom: 8px;
 }
+.hero-section h1 span { color: var(--accent); }
+.subtitle { color: var(--text-2); font-size: 1.1rem; }
 
-.hero-section h1 span {
-    color: var(--accent);
-}
-
-.subtitle {
-    color: var(--text-2);
-    font-size: 1.1rem;
-}
-
-/* Grid System */
+/* 2x2 fixed grid — always two equal columns */
 .grid-layout {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 24px;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
 
-/* Card Styling */
+@media (max-width: 680px) {
+    .grid-layout { grid-template-columns: 1fr; }
+}
+
+/* Card — identical to original */
 .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -42,36 +38,26 @@
     padding: 24px;
     transition: transform var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
 }
-
 .card:hover {
     border-color: var(--border-3);
     transform: translateY(-4px);
 }
 
-/* Coin Display Specifics */
+/* Coin display */
 .coin-header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin: 16px 0;
 }
-
-.coin-header h2 {
-    font-size: 1.25rem;
-}
-
-.coin-header span {
-    font-family: var(--font-mono);
-    color: var(--text-3);
-    font-size: 0.9rem;
-}
+.coin-header h2 { font-size: 1.25rem; }
+.coin-header span { font-family: var(--font-mono); color: var(--text-3); font-size: 0.9rem; }
 
 .price-display {
     display: flex;
     align-items: baseline;
     gap: 12px;
 }
-
 .price-display span:first-child {
     font-family: var(--font-mono);
     font-size: 2rem;
@@ -79,7 +65,7 @@
     color: var(--text);
 }
 
-/* Transaction List Styling */
+/* Recent activity */
 .transaction-item {
     display: flex;
     align-items: center;
@@ -89,24 +75,11 @@
     background: var(--surface-2);
     border-radius: var(--r-md);
 }
-
 .tx-icon {
-    width: 40px;
-    height: 40px;
-    background: var(--accent-bg);
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-weight: bold;
+    width: 40px; height: 40px;
+    background: var(--accent-bg); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-weight: bold; flex-shrink: 0;
 }
-
-.tx-info p {
-    font-weight: 700;
-    font-size: 0.9rem;
-}
-
-.tx-amount {
-    margin-left: auto;
-}
+.tx-info p { font-weight: 700; font-size: 0.9rem; }
+.tx-amount { margin-left: auto; }

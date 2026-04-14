@@ -6,20 +6,43 @@
   <link rel="stylesheet" href="shared.css">
   <link rel="stylesheet" href="index.css">
   <title>CryptoVault Dashboard</title>
+  <style>
+    /* Only new styles needed for the extra two cards */
+    .balance-stat {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 14px 0 16px;
+      padding: 12px 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+    }
+    .balance-stat-label {
+      font-size: 0.75rem;
+      color: var(--text-2);
+      font-weight: 600;
+    }
+    .balance-stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .card .btn-primary { margin-top: 20px; }
+  </style>
 </head>
 <body>
 
   <nav class="top-nav">
     <a class="logo" href="/index.html">Crypto<span>Vault</span></a>
     <a href="/index.html" class="active">Home</a>
-    <a href="topup.html">GBP Balance</a>
     <a href="/portfolio.html">Portfolio</a>
     <a href="/send.html">Send</a>
     <a href="/receive.html">Receive</a>
-    <a href="/recurring.html">Recurring</a>
     <a href="/history.html">History</a>
-    <a href="/settings.html">Settings</a>
     <a href="/publicprofile.html">Public Profile</a>
+    <a href="/settings.html">Settings</a>
     <a href="/logout">Logout</a>
   </nav>
 
@@ -30,10 +53,12 @@
     </header>
 
     <div class="grid-layout">
+
+      <!-- Market Overview -->
       <section id="coin" class="card">
         <div class="field-label">Market Overview</div>
         <div class="coin-header">
-          <img id="coinImage" src="" alt="Coin Logo" width="32" style="display: none;">
+          <img id="coinImage" src="" alt="Coin Logo" width="32" style="display:none;">
           <h2><span id="coinName">Loading...</span> <span id="coinSymbol"></span></h2>
         </div>
         <div class="price-display">
@@ -42,93 +67,236 @@
         </div>
       </section>
 
+      <!-- Recent Activity -->
       <section id="lastTransaction" class="card">
         <div class="field-label">Recent Activity</div>
         <div class="transaction-item">
           <div class="tx-icon">↓</div>
           <div class="tx-info">
             <p>Last Transaction</p>
-            <span class="text-3">Bitcoin Purchase</span>
+            <span class="text-3">—</span>
           </div>
-          <div class="tx-amount badge badge-muted">View Details</div>
+          <div class="tx-amount badge badge-muted">—</div>
         </div>
       </section>
+
+      <!-- GBP Balance -->
+      <section class="card">
+        <div class="field-label">GBP Balance</div>
+        <div class="balance-stat">
+          <span class="balance-stat-label">Current Balance</span>
+          <span class="balance-stat-value" id="gbpBalance">£—</span>
+        </div>
+        <div class="field">
+          <label class="field-label" for="topupAmount">Add Funds (GBP)</label>
+          <input type="number" id="topupAmount" min="1" step="1" placeholder="e.g. 500">
+        </div>
+        <button class="btn btn-primary" onclick="doTopup()">Top Up →</button>
+        <div class="status-strip" id="topupStatus"></div>
+      </section>
+
+      <!-- Create Wallet -->
+      <section class="card">
+        <div class="field-label">Create New Wallet</div>
+        <div class="field" style="margin-top:14px;">
+          <label class="field-label" for="walletCurrency">Currency</label>
+          <select id="walletCurrency">
+            <option value="BTC">Bitcoin (BTC)</option>
+            <option value="ETH">Ethereum (ETH)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="walletName">Wallet Name (optional)</label>
+          <input type="text" id="walletName" placeholder="e.g. My Savings">
+        </div>
+        <button class="btn btn-primary" onclick="doCreateWallet()">Create Wallet →</button>
+        <div class="status-strip" id="walletStatus"></div>
+      </section>
+
+      <!-- Manage Wallets — full width row -->
+      <section class="card" style="grid-column: 1 / -1;">
+        <div class="field-label">Manage Wallets</div>
+        <div id="manageWalletsList" style="margin-top:14px;"></div>
+        <div class="status-strip" id="manageStatus" style="margin-top:10px;"></div>
+      </section>
+
     </div>
   </main>
 
-  <script type='module'>
-      import { fetchCoinPrice } from '/coinPrices/coins.js';
-
-      // 1. Fetch Market Data (Existing logic)
-      const coinId = 'bitcoin';
-      const coinData = await fetchCoinPrice(coinId);
-
-      if (coinData) {
-          const imageElement = document.getElementById('coinImage');
-          if (imageElement && coinData.image) {
-              imageElement.src = coinData.image;
-              imageElement.style.display = 'block'; 
-              imageElement.alt = coinData.name;
-          }
-
-          document.getElementById('coinName').innerText = coinData.name;
-          document.getElementById('coinSymbol').innerText = coinData.symbol.toUpperCase();
-
-          const priceElement = document.getElementById(`${coinId}Price`);
-          if (priceElement) {
-              priceElement.innerText = `£${coinData.price.toLocaleString()}`;
-          }
-
-          const changeElement = document.getElementById('change');
-          if (changeElement) {
-              const isPositive = coinData.change24h >= 0;
-              const symbol = isPositive ? '▲' : '▼';
-              changeElement.className = isPositive ? 'badge badge-success' : 'badge badge-danger';
-              const formattedPercentage = Math.abs(coinData.change24h).toFixed(2);
-              changeElement.innerText = `${symbol} ${formattedPercentage}%`;
-          }
+  <script type="module">
+    import { fetchCoinPrice } from '/coinPrices/coins.js';
+    const coinData = await fetchCoinPrice('bitcoin');
+    if (coinData) {
+      const img = document.getElementById('coinImage');
+      if (img && coinData.image) { img.src = coinData.image; img.style.display = 'block'; }
+      document.getElementById('coinName').innerText = coinData.name;
+      document.getElementById('coinSymbol').innerText = coinData.symbol.toUpperCase();
+      const priceEl = document.getElementById('bitcoinPrice');
+      if (priceEl) priceEl.innerText = `£${coinData.price.toLocaleString()}`;
+      const changeEl = document.getElementById('change');
+      if (changeEl) {
+        const pos = coinData.change24h >= 0;
+        changeEl.className = pos ? 'badge badge-success' : 'badge badge-danger';
+        changeEl.innerText = `${pos ? '▲' : '▼'} ${Math.abs(coinData.change24h).toFixed(2)}%`;
       }
+    }
+    async function updateRecentActivity() {
+      try {
+        const res = await fetch('/api/transactions/latest?walletId=1');
+        if (!res.ok) return;
+        const tx = await res.json();
+        if (tx) {
+          const txIcon = document.querySelector('#lastTransaction .tx-icon');
+          const txInfo = document.querySelector('#lastTransaction .tx-info p');
+          const txSub  = document.querySelector('#lastTransaction .text-3');
+          const txAmt  = document.querySelector('#lastTransaction .tx-amount');
+          if (tx.type === 'send') txIcon.innerText = '↑';
+          else if (tx.type === 'receive') txIcon.innerText = '↓';
+          else txIcon.innerText = '£';
+          txInfo.innerText = `Recent ${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}`;
+          txSub.innerText  = `${tx.amount} ${tx.currency} · ${(tx.address||'').substring(0,8)}…`;
+          txAmt.innerText  = tx.value_gbp ? `£${Number(tx.value_gbp).toFixed(2)}` : '—';
+          txAmt.className  = 'tx-amount badge badge-success';
+        }
+      } catch {}
+    }
+    updateRecentActivity();
+  </script>
 
-      // 2. Fetch Latest Transaction logic
-      async function updateRecentActivity() {
-          try {
-              const walletId = 1; 
-              const response = await fetch(`/api/transactions/latest?walletId=${walletId}`);
-              
-              if (!response.ok) return;
-              
-              const tx = await response.json();
+  <script>
+    // Returns userId or null if not logged in (never throws)
+    async function getCurrentUserId() {
+      const res = await fetch('/api/user');
+      if (!res.ok) return null;
+      return (await res.json()).user.id;
+    }
 
-              if (tx) {
-                  // Select the elements
-                  const txIcon = document.querySelector('#lastTransaction .tx-icon');
-                  const txInfo = document.querySelector('#lastTransaction .tx-info p');
-                  const txSub = document.querySelector('#lastTransaction .text-3');
-                  const txAmount = document.querySelector('#lastTransaction .tx-amount');
-
-                  // 1. Update the Icon based on Type
-                  if (tx.type === 'send') {
-                      txIcon.innerText = '↑';
-                  } else if (tx.type === 'receive') {
-                      txIcon.innerText = '↓';
-                  } else if (tx.type === 'buy' || tx.type === 'recurring-execution') {
-                      txIcon.innerText = '£'; // Or '$' if you prefer
-                  }
-
-                  // 2. Update the Text
-                  txInfo.innerText = `Recent ${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}`;
-                  txSub.innerText = `${tx.amount} ${tx.currency} to ${tx.address.substring(0, 6)}...`;
-                  
-                  // 3. Update the Amount (with the toFixed safety)
-                  const displayValue = tx.value_gbp || tx.value_gbp || 0;
-                  txAmount.innerText = `£${Number(displayValue).toFixed(2)}`;
-                  txAmount.className = "tx-amount badge badge-success"; 
-              }
-          } catch (err) {
-              console.error("Could not load latest transaction:", err);
-          }
+    async function loadGbpBalance() {
+      const userId = await getCurrentUserId();
+      if (!userId) {
+        document.getElementById('gbpBalance').textContent = 'Log in to view';
+        return;
       }
-      updateRecentActivity();
+      try {
+        const wallets = await (await fetch(`/api/transactions/wallets/${userId}`)).json();
+        const gbp = wallets.find(w => w.currency === 'GBP');
+        document.getElementById('gbpBalance').textContent =
+          gbp ? `£${Number(gbp.balance).toLocaleString(undefined,{minimumFractionDigits:2})}` : '£0.00';
+      } catch {}
+    }
+    loadGbpBalance();
+
+    async function doTopup() {
+      const amount   = parseFloat(document.getElementById('topupAmount').value);
+      const statusEl = document.getElementById('topupStatus');
+      if (isNaN(amount) || amount <= 0) {
+        statusEl.className = 'status-strip show error';
+        statusEl.textContent = 'Please enter a valid amount.'; return;
+      }
+      statusEl.className = 'status-strip show info';
+      statusEl.textContent = 'Processing…';
+      const userId = await getCurrentUserId();
+      if (!userId) {
+        statusEl.className = 'status-strip show error';
+        statusEl.textContent = 'You must be logged in to top up.'; return;
+      }
+      try {
+        const data = await (await fetch('/api/transactions/topup', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({userId, amount})
+        })).json();
+        if (data.success) {
+          const nb = Number(data.newBalance).toLocaleString(undefined,{minimumFractionDigits:2});
+          statusEl.className = 'status-strip show success';
+          statusEl.textContent = `✓ Added £${amount.toFixed(2)} — new balance: £${nb}`;
+          document.getElementById('topupAmount').value = '';
+          document.getElementById('gbpBalance').textContent = `£${nb}`;
+        } else {
+          statusEl.className = 'status-strip show error';
+          statusEl.textContent = data.message || 'Top-up failed.';
+        }
+      } catch {
+        statusEl.className = 'status-strip show error';
+        statusEl.textContent = 'Server error — please try again.';
+      }
+    }
+
+    async function doCreateWallet() {
+      const currency = document.getElementById('walletCurrency').value;
+      const name     = document.getElementById('walletName').value.trim();
+      const statusEl = document.getElementById('walletStatus');
+      statusEl.className = 'status-strip show info';
+      statusEl.textContent = 'Creating…';
+      const userId = await getCurrentUserId();
+      if (!userId) {
+        statusEl.className = 'status-strip show error';
+        statusEl.textContent = 'You must be logged in to create a wallet.'; return;
+      }
+      try {
+        const data = await (await fetch('/api/transactions/wallets/create', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({userId, currency, name})
+        })).json();
+        if (data.success) {
+          statusEl.className = 'status-strip show success';
+          statusEl.textContent = `✓ ${currency} wallet created.`;
+          document.getElementById('walletName').value = '';
+          loadManageWallets();
+        } else {
+          statusEl.className = 'status-strip show error';
+          statusEl.textContent = data.message || 'Could not create wallet.';
+        }
+      } catch {
+        statusEl.className = 'status-strip show error';
+        statusEl.textContent = 'Server error — please try again.';
+      }
+    }
+
+    async function loadManageWallets() {
+      const list = document.getElementById('manageWalletsList');
+      const userId = await getCurrentUserId();
+      if (!userId) { list.innerHTML = '<p style="color:var(--text-2);font-size:0.85rem;">Log in to manage wallets.</p>'; return; }
+      try {
+        const wallets = await (await fetch(`/api/transactions/wallets/${userId}`)).json();
+        if (!Array.isArray(wallets) || wallets.length === 0) {
+          list.innerHTML = '<p style="color:var(--text-2);font-size:0.85rem;">No wallets yet — create one above.</p>'; return;
+        }
+        list.innerHTML = wallets.map(w => `
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+            <span style="font-weight:700;color:var(--accent);min-width:100px;">${w.currency}${w.name ? ' · ' + w.name : ' · (No Name)'}</span>
+            <span style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-2);flex:1;">${
+              w.currency === 'GBP'
+                ? '£' + Number(w.balance).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})
+                : Number(w.balance).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:8}) + ' ' + w.currency
+            }</span>
+            <input type="text" id="rename-${w.id}" placeholder="New name" style="width:110px;padding:6px 10px;font-size:0.82rem;">
+            <button onclick="renameWallet(${w.id})" class="btn btn-secondary" style="height:34px;padding:0 14px;font-size:0.78rem;">Rename</button>
+            <button onclick="deleteWallet(${w.id})" class="btn btn-danger">Delete</button>
+          </div>`).join('');
+      } catch { list.innerHTML = '<p style="color:var(--danger);font-size:0.85rem;">Could not load wallets.</p>'; }
+    }
+    loadManageWallets();
+
+    window.renameWallet = async function(walletId) {
+      const input = document.getElementById('rename-' + walletId);
+      const name  = input.value.trim();
+      if (!name) return;
+      await fetch(`/api/transactions/wallets/${walletId}/rename`, {
+        method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name})
+      });
+      input.value = '';
+      loadManageWallets();
+    };
+
+    window.deleteWallet = async function(walletId) {
+      if (!confirm('Delete this wallet? This cannot be undone.')) return;
+      const statusEl = document.getElementById('manageStatus');
+      const res  = await fetch(`/api/transactions/wallets/${walletId}`, {method:'DELETE'});
+      const data = await res.json();
+      statusEl.className = res.ok ? 'status-strip show success' : 'status-strip show error';
+      statusEl.textContent = res.ok ? '✓ Wallet deleted.' : (data.message || 'Could not delete wallet.');
+      loadManageWallets();
+    };
   </script>
 </body>
 </html>
