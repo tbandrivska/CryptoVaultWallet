@@ -12,6 +12,20 @@ function showSection(section) {
 }
 
 const availableCryptos = ['BTC','ETH','USDT','SOL','ADA','DOT','USDC','LTC','DOGE','BNB','LINK'];
+
+const fakeAddresses = {
+  BTC:  'bc1qxy2kgdygjrsqtzq2n0yrf249xp83kkfjhx0wlh',
+  ETH:  '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
+  USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+  SOL:  'DRpbCBMxVnDK7maPM2K65yBemM5NS2rBoNpBnry9HjDp',
+  ADA:  'addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgs8a7vh',
+  DOT:  '1FRMM8PEiWXYax7rpS6X4XZX1aAAxSWx1CrKTyrVYhV24fg',
+  USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  LTC:  'LcBV5mXEMtL6nKCHmAQoJSmU9MfKhqPqo9',
+  DOGE: 'DBXu2kgc3xtvCUWFcxFE3r9hEYgmuaaCyD',
+  BNB:  'bnb1grpf0955h0ykzq3ar5nmum7y6gdfl6lxfn46h2',
+  LINK: '0x514910771AF9Ca656af840dff83E8264EcF986CA'
+};
 let cachedProfiles = [];
 let currentUser   = null;
 let createForm, createMessage;
@@ -174,9 +188,29 @@ function renderProfiles(list, profiles, emptyMsg = 'No profiles yet — be the f
     const tagDiv = document.createElement('div');
     tagDiv.className = 'profile-tags';
     (profile.acceptedCryptos || []).forEach(c => {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'profile-tag-wrapper';
+
       const tag = document.createElement('span');
-      tag.className = 'profile-tag'; tag.textContent = c;
-      tagDiv.appendChild(tag);
+      tag.className = 'profile-tag';
+      tag.textContent = c;
+
+      const btn = document.createElement('button');
+      btn.className = 'copy-addr-btn';
+      btn.title = `Copy ${c} address`;
+      btn.textContent = '⧉';
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const addr = fakeAddresses[c] || '0x0000000000000000000000000000000000000000';
+        navigator.clipboard.writeText(addr).then(() => {
+          btn.textContent = '✓';
+          setTimeout(() => { btn.textContent = '⧉'; }, 1500);
+        });
+      });
+
+      wrapper.appendChild(tag);
+      wrapper.appendChild(btn);
+      tagDiv.appendChild(wrapper);
     });
 
     const bioDiv = document.createElement('div');

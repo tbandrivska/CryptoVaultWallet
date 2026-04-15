@@ -252,19 +252,48 @@ textarea {
     gap: 8px;
 }
 
+.profile-tag-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+}
+
 .profile-tag {
     display: inline-flex;
     align-items: center;
-    padding: 4px 12px;
+    padding: 4px 8px 4px 12px;
     background: var(--accent-bg);
     color: var(--accent);
     border: 1px solid rgba(0, 203, 168, 0.22);
-    border-radius: 100px;
+    border-right: none;
+    border-radius: 100px 0 0 100px;
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.07em;
     text-transform: uppercase;
     white-space: nowrap;
+}
+
+.copy-addr-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border: 1px solid rgba(0, 203, 168, 0.22);
+    border-left: 1px solid rgba(0, 203, 168, 0.4);
+    border-radius: 0 100px 100px 0;
+    font-size: 0.75rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--t-base) var(--ease), color var(--t-base) var(--ease);
+    white-space: nowrap;
+}
+
+.copy-addr-btn:hover {
+    background: var(--accent);
+    color: var(--surface);
 }
 
 .error-message {
