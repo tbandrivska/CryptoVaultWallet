@@ -69,6 +69,19 @@ export const addTransaction = async (walletId, tx) => {
 
 // Send crypto, update balance, and record transaction
 export const sendCrypto = async (walletId, amount, address, currency = "BTC") => {
+  const fakeAddresses = {
+    BTC:  'bc1qxy2kgdygjrsqtzq2n0yrf249xp83kkfjhx0wlh',
+    ETH:  '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
+    USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+    SOL:  'DRpbCBMxVnDK7maPM2K65yBemM5NS2rBoNpBnry9HjDp',
+    ADA:  'addr1qx2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3n0d3vllmyqwsx5wktcd8cc3sq835lu7drv2xwl2wywfgs8a7vh',
+    DOT:  '1FRMM8PEiWXYax7rpS6X4XZX1aAAxSWx1CrKTyrVYhV24fg',
+    USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    LTC:  'LcBV5mXEMtL6nKCHmAQoJSmU9MfKhqPqo9',
+    DOGE: 'DBXu2kgc3xtvCUWFcxFE3r9hEYgmuaaCyD',
+    BNB:  'bnb1grpf0955h0ykzq3ar5nmum7y6gdfl6lxfn46h2',
+    LINK: '0x514910771AF9Ca656af840dff83E8264EcF986CA'
+  };
   if (!address || address.length < 5) {
     return { success: false, message: "Invalid wallet address" };
   }
@@ -88,12 +101,17 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
   }
 
   const recipient = await getWalletByAddress(address, currency);
+  const normalizedAddress = address.trim().toLowerCase();
 
-  if (!recipient) {
+  const isFakeRecipient = Object.values(fakeAddresses)
+    .map(a => a.trim().toLowerCase())
+    .includes(normalizedAddress);
+
+  if (!recipient && !isFakeRecipient) {
     return { success: false, message: "Recipient wallet not found" };
   }
 
-  if (recipient.id === walletId) {
+  if (recipient && recipient.id === walletId) {
     return { success: false, message: "Cannot send to the same wallet" };
   }
 
@@ -122,7 +140,9 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
       [amount, walletId]
     );
 
-    await addToBalance(recipient.id, amount);
+    if (recipient) {
+      await addToBalance(recipient.id, amount);
+    }
 
     const sendTx = {
       walletId,
@@ -155,36 +175,38 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
       ]
     );
 
-    const receiveTx = {
-      walletId: recipient.id,
-      type: "receive",
-      currency,
-      amount,
-      price: priceObj.price,
-      value_gbp,
-      address: sender.address,
-      status: "success",
-      timestamp
-    };
+    if (recipient) {
+      const receiveTx = {
+        walletId: recipient.id,
+        type: "receive",
+        currency,
+        amount,
+        price: priceObj.price,
+        value_gbp,
+        address: sender.address,
+        status: "success",
+        timestamp
+      };
 
-    await db.query(
-      `
-        INSERT INTO transactions
-        (wallet_id, type, currency, amount, price, value_gbp, address, status, timestamp)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-      [
-        receiveTx.walletId,
-        receiveTx.type,
-        receiveTx.currency,
-        receiveTx.amount,
-        receiveTx.price,
-        receiveTx.value_gbp,
-        receiveTx.address,
-        receiveTx.status,
-        receiveTx.timestamp
-      ]
-    );
+      await db.query(
+        `
+          INSERT INTO transactions
+          (wallet_id, type, currency, amount, price, value_gbp, address, status, timestamp)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        [
+          receiveTx.walletId,
+          receiveTx.type,
+          receiveTx.currency,
+          receiveTx.amount,
+          receiveTx.price,
+          receiveTx.value_gbp,
+          receiveTx.address,
+          receiveTx.status,
+          receiveTx.timestamp
+        ]
+      );
+    }
 
     await db.commit();
 
@@ -192,8 +214,8 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
       success: true,
       transaction: sendTx,
       senderNewBalance: sender.balance - amount,
-      recipientWalletId: recipient.id,
-      recipientNewBalance: Number(recipient.balance) + Number(amount)
+      recipientWalletId: recipient ? recipient.id : null,
+      recipientNewBalance: recipient ? Number(recipient.balance) + Number(amount) : null
     };
   } catch (error) {
     await db.rollback();
