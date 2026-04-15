@@ -107,11 +107,37 @@
         renderChart();
       });
     </script>
-    <script>
+    <script type="module">
+      import { fetchCoinPrice } from './coinPrices/coins.js';
+
       async function getCurrentUserId() {
         const res = await fetch('/api/user');
         if (!res.ok) throw new Error('Not logged in');
         return (await res.json()).user.id;
+      }
+
+      function mapCurrencyToCoinId(currency) {
+        const normalized = String(currency).toUpperCase();
+        if (normalized === 'BTC') return 'bitcoin';
+        if (normalized === 'ETH') return 'ethereum';
+        if (normalized === 'LTC') return 'litecoin';
+        return normalized.toLowerCase();
+      }
+
+      async function convertBalanceToGBP(wallet) {
+        if (wallet.currency === 'GBP') {
+          return Number(wallet.balance);
+        }
+
+        const coinId = mapCurrencyToCoinId(wallet.currency);
+        if (!coinId) return null;
+
+        const priceObj = await fetchCoinPrice(coinId);
+        if (!priceObj || typeof priceObj.price !== 'number') {
+          return null;
+        }
+
+        return Number(wallet.balance) * priceObj.price;
       }
 
       async function loadWallets() {
@@ -120,22 +146,36 @@
         const list = document.getElementById('walletsList');
         if (!Array.isArray(wallets) || wallets.length === 0) {
           list.innerHTML = '<p style="color:var(--text-2);font-size:0.875rem;">No wallets found.</p>';
-          document.getElementById('walletValue').textContent = '£0.00'; return;
+          document.getElementById('walletValue').textContent = '£0.00';
+          return;
         }
+
         let totalGBP = 0;
-        list.innerHTML = wallets.map(w => {
-          if (w.currency === 'GBP') totalGBP += Number(w.balance);
-          const bal = w.currency === 'GBP'
-            ? `£${Number(w.balance).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`
+        const walletRows = await Promise.all(wallets.map(async (w) => {
+          const gbpValue = await convertBalanceToGBP(w);
+          if (typeof gbpValue === 'number' && !Number.isNaN(gbpValue)) {
+            totalGBP += gbpValue;
+          }
+
+          const balanceLabel = gbpValue != null
+            ? `£${gbpValue.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`
             : Number(w.balance).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:8});
+
+          const originalLabel = w.currency !== 'GBP' && gbpValue != null
+            ? ` (${Number(w.balance).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:8})} ${w.currency})`
+            : '';
+
           return `<div class="wallet-row">
             <span class="wallet-currency">${w.currency}${w.name ? ' · ' + w.name : ''}</span>
-            <span class="wallet-balance">${bal}</span>
+            <span class="wallet-balance">${balanceLabel}${originalLabel}</span>
           </div>`;
-        }).join('');
+        }));
+
+        list.innerHTML = walletRows.join('');
         document.getElementById('walletValue').textContent =
           `£${totalGBP.toLocaleString(undefined,{minimumFractionDigits:2})}`;
       }
+
       loadWallets();
 
       document.getElementById('buyForm').addEventListener('submit', async function(e) {
@@ -147,7 +187,8 @@
         msgEl.textContent = 'Processing…';
         if (isNaN(amount) || amount <= 0) {
           msgEl.className = 'status-strip show error';
-          msgEl.textContent = 'Enter a valid amount.'; return;
+          msgEl.textContent = 'Enter a valid amount.';
+          return;
         }
         try {
           const userId = await getCurrentUserId();

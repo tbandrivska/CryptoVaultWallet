@@ -89,8 +89,8 @@ export async function fetchTop20CoinPrice() {
             for (let i = 0; i < walletCurrencies.length; i++) {
                 // Map currency to coin id (assuming BTC -> bitcoin, ETH -> ethereum, etc.)
                 let coinId = walletCurrencies[i].toLowerCase();
-                if (coinId === 'btc') coinId = 'bitcoin';
-                else if (coinId === 'eth') coinId = 'ethereum';
+                if (coinId.toLowerCase() === 'btc') coinId = 'bitcoin';
+                else if (coinId.toLowerCase() === 'eth') coinId = 'ethereum';
                 // Add more mappings if needed
                 let coin = data.find(c => c.id === coinId);
                 let walletAmount = Number(walletBalances[i]);

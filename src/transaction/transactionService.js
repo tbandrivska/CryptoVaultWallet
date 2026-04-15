@@ -13,6 +13,31 @@ export const updateBalance = async (walletId, amount) => {
   );
 };
 
+export const addToBalance = async (walletId, amount) => {
+  await db.query(
+    `
+      UPDATE wallets
+      SET balance = balance + ?
+      WHERE id = ?
+    `,
+    [amount, walletId]
+  );
+};
+
+export const getWalletByAddress = async (address, currency) => {
+  const [rows] = await db.query(
+    `
+      SELECT id, balance, currency, address
+      FROM wallets
+      WHERE address = ? AND currency = ?
+      LIMIT 1
+    `,
+    [address, currency]
+  );
+
+  return rows[0] ?? null;
+};
+
 // Add a transaction and update balance if needed
 export const addTransaction = async (walletId, tx) => {
   if (
@@ -52,13 +77,27 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
     return { success: false, message: "Amount must be greater than 0" };
   }
 
-  const [rows] = await db.query(
-    "SELECT balance FROM wallets WHERE id = ?",
+  const [senderRows] = await db.query(
+    "SELECT balance, address FROM wallets WHERE id = ?",
     [walletId]
   );
-  const balance = rows[0]?.balance ?? 0;
+  const sender = senderRows[0];
 
-  if (amount > balance) {
+  if (!sender) {
+    return { success: false, message: "Sender wallet not found" };
+  }
+
+  const recipient = await getWalletByAddress(address, currency);
+
+  if (!recipient) {
+    return { success: false, message: "Recipient wallet not found" };
+  }
+
+  if (recipient.id === walletId) {
+    return { success: false, message: "Cannot send to the same wallet" };
+  }
+
+  if (amount > sender.balance) {
     return { success: false, message: "Insufficient funds" };
   }
 
@@ -73,47 +112,93 @@ export const sendCrypto = async (walletId, amount, address, currency = "BTC") =>
   }
 
   const value_gbp = amount * priceObj.price;
+  const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ");
 
-  await db.query(
-    "UPDATE wallets SET balance = balance - ? WHERE id = ?",
-    [amount, walletId]
-  );
+  try {
+    await db.beginTransaction();
 
-  const tx = {
-    type: "send",
-    currency,
-    amount,
-    price: priceObj.price,
-    value_gbp,
-    address,
-    status: "success",
-    timestamp: new Date().toISOString().slice(0, 19).replace("T", " ")
-  };
+    await db.query(
+      "UPDATE wallets SET balance = balance - ? WHERE id = ?",
+      [amount, walletId]
+    );
 
-  await db.query(
-    `
-      INSERT INTO transactions
-      (wallet_id, type, currency, amount, price, value_gbp, address, status, timestamp)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `,
-    [
+    await addToBalance(recipient.id, amount);
+
+    const sendTx = {
       walletId,
-      tx.type,
-      tx.currency,
-      tx.amount,
-      tx.price,
-      tx.value_gbp,
-      tx.address,
-      tx.status,
-      tx.timestamp
-    ]
-  );
+      type: "send",
+      currency,
+      amount,
+      price: priceObj.price,
+      value_gbp,
+      address,
+      status: "success",
+      timestamp
+    };
 
-  return {
-    success: true,
-    ...tx,
-    newBalance: balance - amount
-  };
+    await db.query(
+      `
+        INSERT INTO transactions
+        (wallet_id, type, currency, amount, price, value_gbp, address, status, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        sendTx.walletId,
+        sendTx.type,
+        sendTx.currency,
+        sendTx.amount,
+        sendTx.price,
+        sendTx.value_gbp,
+        sendTx.address,
+        sendTx.status,
+        sendTx.timestamp
+      ]
+    );
+
+    const receiveTx = {
+      walletId: recipient.id,
+      type: "receive",
+      currency,
+      amount,
+      price: priceObj.price,
+      value_gbp,
+      address: sender.address,
+      status: "success",
+      timestamp
+    };
+
+    await db.query(
+      `
+        INSERT INTO transactions
+        (wallet_id, type, currency, amount, price, value_gbp, address, status, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        receiveTx.walletId,
+        receiveTx.type,
+        receiveTx.currency,
+        receiveTx.amount,
+        receiveTx.price,
+        receiveTx.value_gbp,
+        receiveTx.address,
+        receiveTx.status,
+        receiveTx.timestamp
+      ]
+    );
+
+    await db.commit();
+
+    return {
+      success: true,
+      transaction: sendTx,
+      senderNewBalance: sender.balance - amount,
+      recipientWalletId: recipient.id,
+      recipientNewBalance: Number(recipient.balance) + Number(amount)
+    };
+  } catch (error) {
+    await db.rollback();
+    return { success: false, message: error.message || "Transaction failed" };
+  }
 };
 
 export const receiveCrypto = async (userId, currency, amount, fromAddress) => {
