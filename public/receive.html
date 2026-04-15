@@ -83,15 +83,21 @@
     }
   }
 
-  function copyAddress() {
-    const address = document.getElementById('address').innerText.trim();
-    navigator.clipboard.writeText(address).then(() => {
-      const el = document.getElementById('copyMsg');
-      el.textContent = '✓ Address copied to clipboard';
-      setTimeout(() => { el.textContent = ''; }, 3000);
-    });
+ function copyAddress() {
+  const address = document.getElementById('address').innerText.trim();
+  const el = document.getElementById('copyMsg');
+  if (!address || address === 'No address found.' || address === 'Loading address…') {
+    el.textContent = '⚠️ No address to copy!';
+    el.style.color = 'var(--danger, #d33)';
+    setTimeout(() => { el.textContent = ''; el.style.color = ''; }, 3000);
+    return;
   }
-
+  navigator.clipboard.writeText(address).then(() => {
+    el.textContent = '✓ Address copied to clipboard';
+    el.style.color = 'var(--success, #090)';
+    setTimeout(() => { el.textContent = ''; el.style.color = ''; }, 3000);
+  });
+}
   document.addEventListener('DOMContentLoaded', loadWalletsAndAddresses);
 </script>
 </body>

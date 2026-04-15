@@ -7,7 +7,7 @@ document.getElementById('registerForm').addEventListener('submit', function(even
     let password = document.getElementById('password').value;
     let confirmPassword = document.getElementById('confirmPassword').value;
     let messageBox = document.getElementById('messageBox');
-
+    
     messageBox.className = "alert";
     
     let passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -40,20 +40,25 @@ document.getElementById('registerForm').addEventListener('submit', function(even
         },
         body: JSON.stringify(userData)
     })
+    
     .then(response => response.json())
+    
     .then(data => {
         if (data.success) { 
+            messageBox.classList.remove('hidden');
             messageBox.classList.add('alert-success');
             messageBox.innerText = "Account created successfully!";
             setTimeout(() => {
                 window.location.href = "login.html";
             }, 2000);
         } else {
+            messageBox.classList.remove('hidden');
             messageBox.classList.add('alert-error');
             messageBox.innerText = data.message || "Registration failed on the server.";
         }
     })
     .catch(error => {
+        messageBox.classList.remove('hidden');
         messageBox.classList.add('alert-error');
         messageBox.innerText = "Could not connect to the server. Make sure the backend is running!";
         console.error("Fetch error:", error);
