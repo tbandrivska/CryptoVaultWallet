@@ -81,28 +81,7 @@ export async function fetchTop20CoinPrice() {
         data.sort((a, b) => b.current_price - a.current_price);
 
         // Fetch the user's GBP wallet balance from the backend
-        try {
-            const res = await fetch('/api/transactions/wallets/1'); // Replace 1 with actual userId if needed
-            const wallets = await res.json();
-            const walletCurrencies = wallets.map(w => w.currency);
-            const walletBalances = wallets.map(w => w.balance);
-            for (let i = 0; i < walletCurrencies.length; i++) {
-                // Map currency to coin id (assuming BTC -> bitcoin, ETH -> ethereum, etc.)
-                let coinId = walletCurrencies[i].toLowerCase();
-                if (coinId.toLowerCase() === 'btc') coinId = 'bitcoin';
-                else if (coinId.toLowerCase() === 'eth') coinId = 'ethereum';
-                // Add more mappings if needed
-                let coin = data.find(c => c.id === coinId);
-                let walletAmount = Number(walletBalances[i]);
-                if (coin && walletCurrencies[i] !== 'GBP') { // Skip GBP as it's not a crypto
-                    walletBalance += walletAmount * coin.current_price;
-                }
-            }
-            walletVal.innerHTML = `£${walletBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-        } catch (err) {
-            console.error("Error fetching GBP wallet:", err);
-            walletVal.innerHTML = 'Error loading wallet';
-        }
+        
 
         // Clear and Rebuild Sidebar
         container.innerHTML = '';
